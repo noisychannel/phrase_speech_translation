@@ -57,7 +57,6 @@ for phrase in sourcePhrases:
       nextState = nextState + 1
     stateID = nextState
     FSTFile.write(str(currentState) + " 0 0 " + getVocabID("_".join(phraseComp)) + "\n")
-  break
 
 symFile.close()
 FSTFile.close()

@@ -7,3 +7,27 @@
 asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/dev/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev 0.067
 asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/dev2/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev2 0.067
 asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/test/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_test 0.067
+
+# Merge lattices based on timing information available
+# Convert to PLF
+asr_util/mainPLF.py -l data/asr/dev/lattices/lattices-pushed \
+  -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev -o data/asr/dev/plf \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim
+asr_util/mainPLF.py -l data/asr/test/lattices/lattices-pushed \
+  -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/test \
+  -o data/asr/test/plf \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim
+
+
+###############
+# MT Steps
+# TODO
+# 1. How do you match vocabulary and symbol IDs with the ASR corpus
+###############
+
+# Convert the Moses phrase table to an FST
+mt_util/phraseTable2FST.py -p /export/a04/gkumar/experiments/is2015/1/model/phrase-table.1.gz -f data/mt/phrase-table.fst.txt -s data/mt/syms.txt
+# Compile this fst
+fstcompile data/mt/phrase-table.fst.txt data/mt/phrase-table.fst.bin

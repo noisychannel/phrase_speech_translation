@@ -5,8 +5,6 @@
 
 # Derived from the Kaldi recipe for Fisher Spanish (KALDI_TRUNK/egs/fisher_callhome_spanish/s5/local)
 
-. path.sh
-
 if [ $# -lt 4 ]; then
   echo "Usage : asr_util/kaldi2FST.sh [KALDI_ROOT] [LatticeDir] [DecodeDir] [AcousticScale]"
   echo "Enter the latdir (where the lattices will be put), the decode dir containing lattices and the acoustic scale"
@@ -14,6 +12,7 @@ if [ $# -lt 4 ]; then
 fi
 
 prunebeam=13
+maxProcesses=10
 
 KALDI_ROOT=$1
 latdir=$2
@@ -29,7 +28,7 @@ then
   exit 1;
 fi
 
-stage=0
+stage=1
 
 if [ -d $decode_dir ]
 then
@@ -51,7 +50,7 @@ then
     bname="$latdir/${bname%.gz}"
     gunzip -c $l > "$bname.bin"
 
-    if [ $stage -le 0 ]; then
+    if [ $stage -le 1 ]; then
 
       # Now copy into ark format
       $KALDI_ROOT/src/latbin/lattice-copy ark:$bname.bin ark,t:- > "$bname.raw"
@@ -92,6 +91,7 @@ then
 
   if [ $stage -le 2 ]; then
     #Compile lattices
+    runningProcesses=0
     for l in $latdir/$rawLatDir/*.lat
     do
       (
@@ -99,6 +99,14 @@ then
       bname=${l##*/}
       fstcompile --arc_type=log $latdir/$rawLatDir/$bname $latdir/$compiledLatDir/$bname
       ) &
+      runningProcesses=$((runningProcesses+1))
+      echo "#### Processes running = " $runningProcesses " ####"
+      if [ $runningProcesses -eq $maxProcesses ]; then
+        echo "#### Waiting for slot ####"
+        wait
+        runningProcesses=0
+        echo "#### Done waiting ####"
+      fi
     done
     wait
     echo "Done compiling lattices."
@@ -109,6 +117,7 @@ then
     # Create a dummy FST with one state and no arcs first
     echo 0 | fstcompile --arc_type=log - $latdir/$preplfLatDir/dummy.fst
     # Push Lattice weights towards initial state
+    runningProcesses=0
     for l in $latdir/$compiledLatDir/*.lat
     do
       (
@@ -122,6 +131,14 @@ then
         fstrmepsilon - | \
         fstreverse - $latdir/$preplfLatDir/$bname
       ) &
+      runningProcesses=$((runningProcesses+1))
+      echo "#### Processes running = " $runningProcesses " ####"
+      if [ $runningProcesses -eq $maxProcesses ]; then
+        echo "#### Waiting for slot ####"
+        wait
+        runningProcesses=0
+        echo "#### Done waiting ####"
+      fi
     done
     wait
     # Let's take a moment to thank the dummy FST for playing its

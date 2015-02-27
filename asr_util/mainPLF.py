@@ -23,7 +23,7 @@ parser.add_argument("-o", "--outputDir", dest="provDir", help="The location of t
 parser.add_argument("-t", "--timingDir", dest="timingDir", help="The location of the directory which contains timing information for this dataset")
 opts = parser.parse_args()
 
-if opts.latticeLocation is None or opts.symtable is None or opts.conversationList is None or opts.provFile is None:
+if opts.latticeLocation is None or opts.symtable is None or opts.conversationList is None or opts.provDir is None:
   parser.print_help()
   sys.exit(1)
 
@@ -37,7 +37,7 @@ else:
   os.system("rm " + opts.provDir + "/*")
 
 conversationList = open(opts.conversationList)
-provFile = open(opts.provDir + "/output.plf")
+provFile = open(opts.provDir + "/output.plf", "w+")
 invalidPLF = open(opts.provDir + "/invalidPLF", "w+")
 blankPLF = open(opts.provDir + "/blankPLF", "w+")
 rmLines = open(opts.provDir + "/removeLines", "w+")
@@ -49,7 +49,7 @@ rmLines = open(opts.provDir + "/removeLines", "w+")
 #conversationList = open('/export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/test')
 #provFile = open('/export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/bmmi-t/asr.test.plf', 'w+')
 
-tmpDir = latticeLocation + "/lattmp"
+tmpdir = latticeLocation + "/lattmp"
 #tmpdir = 'data/local/data/tmp/bmmi-t/lattmp'
 
 invalidplfdir = opts.provDir + '/invalidPLFs'

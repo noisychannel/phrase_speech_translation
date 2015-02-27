@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+"""
+Converts a Moses phrase table to a FST in the OpenFST format
+A text based FST is written out and may need to be compiled
+into a binary using fstcompile
+Also writes a symbol table with the vocbulary and the corresponding
+symbol IDs
+
+Author : Gaurav Kumar (Johns Hopkins University)
+"""
+
 import gzip
 import collections
 import argparse
@@ -24,10 +34,16 @@ symFile.write("<eps> 0\n")
 
 sourcePhrases = set()
 vocabulary = {"<eps>":0}
+# Record variables to increment when an item is added to the 
+# vocabulary or if a new arc is added (record new state)
 vocabID = 1
 stateID = 1
 
 def getVocabID(word):
+  """
+  Returns the vocabulary ID of the word argument
+  If the word is not in the vocabulary, it is added
+  """
   global vocabID, symFile
   if word not in vocabulary:
     vocabulary[word] = vocabID
@@ -35,24 +51,29 @@ def getVocabID(word):
     vocabID = vocabID + 1
   return str(vocabulary[word])
 
+# Get the source side phrases from the phrase table
 for line in phraseTable:
   # Split phrase pair
+  # TODO: Scores are not recorded in the current form. Fix. Add a switch for this.
   phraseInfo = line.split("|||")
   sourcePhrase = phraseInfo[0].strip()
   sourcePhrases.add(sourcePhrase)
 
+# Create paths for each of the source side phrases
 for phrase in sourcePhrases:
   phraseComp = phrase.split()
   if len(phraseComp) == 1:
-    # Single word phrase
-    FSTFile.write("0 0 " + getVocabID(phraseComp[0]) + " " + getVocabID(phraseComp[0]) + "\n")
+    # Single word phrase, the path starts and ends at 0
+    # TODO: Length based features currently used, this may be replaced by the actual features later
+    FSTFile.write("0 0 " + getVocabID(phraseComp[0]) + " " + getVocabID(phraseComp[0]) + "1 \n")
     pass
   else:
-    path = []
+    # Create a path, starts at 0, ends at 0 with intermediate states
     currentState = 0
     nextState = stateID
     for item in phraseComp:
-      FSTFile.write(str(currentState) + " " + str(nextState) + " " + getVocabID(item) + " 0\n")
+      # TODO: Length based features currently used, this may be replaced by the actual features later
+      FSTFile.write(str(currentState) + " " + str(nextState) + " " + getVocabID(item) + " 0 1\n")
       currentState = nextState
       nextState = nextState + 1
     stateID = nextState

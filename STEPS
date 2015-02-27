@@ -1,0 +1,9 @@
+# Get the lattices from Kaldi for each dataset that has been decoded
+# dev, dev2 and test : Fisher
+# Acoustic scale set to 1/W, where W led to the best WER
+# --- The symbols for laugh, noise and OOV are hardcoded in the Kaldi2FST script. You should replace them (2038, 2039, 2040 in the default recipe)
+# since they get replaced with eplison upon conversion
+# --- Pruned with a beam width of 13.0
+asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/dev/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev 0.067
+asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/dev2/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev2 0.067
+asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/test/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_test 0.067

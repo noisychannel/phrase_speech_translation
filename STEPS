@@ -31,3 +31,9 @@ asr_util/mainPLF.py -l data/asr/test/lattices/lattices-pushed \
 mt_util/phraseTable2FST.py -p /export/a04/gkumar/experiments/is2015/1/model/phrase-table.1.gz -f data/mt/phrase-table.fst.txt -s data/mt/syms.txt
 # Compile this fst
 fstcompile data/mt/phrase-table.fst.txt data/mt/phrase-table.fst.bin
+
+##############
+# Interface steps
+# ############
+# To get sentence level BLEU
+/export/a04/gkumar/code/mosesdecoder/bin/sentence-bleu refs... < cand

@@ -22,6 +22,35 @@ asr_util/mainPLF.py -l data/asr/test/lattices/lattices-pushed \
 
 nohup asr_util/kaldi2NBest.sh /export/a04/gkumar/code/kaldi-new data/asr/dev/nbest /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev 0.067 /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt > nbest_dev.out &
 
+# Get the 1best files
+nohup asr_util/main1Best.py \
+  -i /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev/scoring/15.tra \
+  -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev \
+  -o data/asr/dev/1best \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/dev.1best.out &
+
+nohup asr_util/main1Best.py \
+  -i /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev2/scoring/15.tra \
+  -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev2 \
+  -o data/asr/dev2/1best \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/dev2.1best.out &
+
+nohup asr_util/main1Best.py \
+  -i /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_test/scoring/15.tra \
+  -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/test \
+  -o data/asr/test/1best \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/test.1best.out &
+
+# Get the nbest files
+nohup asr_util/mainNBest.py \
+  -i data/asr/dev/nbest/all.nbest \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev \
+  -o data/asr/dev/nbest \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/dev.nbest.merge.out &
+
 ###############
 # MT Steps
 # TODO

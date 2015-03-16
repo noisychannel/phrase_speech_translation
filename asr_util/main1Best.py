@@ -10,21 +10,22 @@ import sys
 import argparse
 
 parser = argparse.ArgumentParser("Merges Kaldi 1best output based on time information provided with the Spanish Fisher corpus")
-parser.add_argument("-s", "--scoring", dest="scoringFile", help="The location of Kaldi scoring file that contains the 1best output")
+parser.add_argument("-i", "--input", dest="scoringFile", help="The location of Kaldi scoring file that contains the 1best output")
 parser.add_argument("-s", "--symtable", dest="symtable", help="The location of the symbol table for this output")
 parser.add_argument("-c", "--convList", dest="conversationList", help="The location of the conversation list for this dataset partition")
-parser.add_argument("-o", "--outputDir", dest="provDir", help="The location of the directory into which the PLFs will be written")
+parser.add_argument("-o", "--outputDir", dest="provDir", help="The location of the directory into which the 1best will be written")
 parser.add_argument("-t", "--timingDir", dest="timingDir", help="The location of the directory which contains timing information for this dataset")
+opts = parser.parse_args()
 
 scoringFile = opts.scoringFile
 wordsFile = open(opts.symtable)
 conversationList = open(opts.conversationList)
 oneBestTmp = opts.provDir + '/tmp'
-provFile = open(opts.provDir + '/asr.1best', 'w+')
-timLocation = opts.timingDir
-
 # Create the tmp directory if it does not exist
 os.system("mkdir -p " + oneBestTmp)
+
+provFile = open(opts.provDir + '/asr.1best', 'w+')
+timLocation = opts.timingDir
 
 def findTranscription(timeDetail):
 	file1 = open(scoringFile)

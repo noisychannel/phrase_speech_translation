@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser("Converts a Moses Phrase table to an FST")
 parser.add_argument("-p", "--phrase_table", dest="phraseTable", help="The location of the phrase table")
 parser.add_argument("-f", "--fst", dest="FSTFile", help="The location to write out the output FST")
 parser.add_argument("-s", "--syms", dest="symFile", help="The location to write out the output symbols")
+parser.add_argument("-e", "--esyms", dest="eSymFile", help="An existing symbol table to start from ")
 opts = parser.parse_args()
 
 if opts.phraseTable is None or opts.FSTFile is None or opts.symFile is None:
@@ -28,6 +29,7 @@ if opts.phraseTable is None or opts.FSTFile is None or opts.symFile is None:
 phraseTable = gzip.open(opts.phraseTable)
 FSTFile = open(opts.FSTFile, "w+")
 symFile = open(opts.symFile, "w+")
+eSymFile = open(opts.eSymFile)
 # Write final state and the epsilon symbol
 FSTFile.write("0\n")
 symFile.write("<eps> 0\n")
@@ -80,5 +82,6 @@ for phrase in sourcePhrases:
     FSTFile.write(str(currentState) + " 0 0 " + getVocabID("_".join(phraseComp)) + "\n")
 
 symFile.close()
+eSymFile.close()
 FSTFile.close()
 phraseTable.close()

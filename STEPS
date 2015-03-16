@@ -20,6 +20,7 @@ asr_util/mainPLF.py -l data/asr/test/lattices/lattices-pushed \
   -o data/asr/test/plf \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim
 
+nohup asr_util/kaldi2NBest.sh /export/a04/gkumar/code/kaldi-new data/asr/dev/nbest /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev 0.067 /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt > nbest_dev.out &
 
 ###############
 # MT Steps

@@ -1,13 +1,26 @@
+#!/bin/bash
 # Get the lattices from Kaldi for each dataset that has been decoded
 # dev, dev2 and test : Fisher
 # Acoustic scale set to 1/W, where W led to the best WER
-# --- The symbols for laugh, noise and OOV are hardcoded in the Kaldi2FST script. You should replace them (2038, 2039, 2040 in the default recipe)
+# --- The symbols for laugh, noise and OOV , <unk> are hardcoded in the Kaldi2FST script. You should replace them (2035, 2038, 2039, 2040 in the default recipe)
 # since they get replaced with eplison upon conversion
 # --- Pruned with a beam width of 13.0
-asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/dev/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev 0.067
-asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/dev2/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev2 0.067
-asr_util/kaldi2FST.sh /export/a04/gkumar/code/kaldi-new data/asr/test/lattices /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_test 0.067
+asr_util/kaldi2FST.sh \
+  /export/a04/gkumar/code/kaldi-new \
+  data/asr/dev/lattices \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev 0.067
 
+asr_util/kaldi2FST.sh \
+  /export/a04/gkumar/code/kaldi-new \
+  data/asr/dev2/lattices \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev2 0.067
+
+asr_util/kaldi2FST.sh \
+  /export/a04/gkumar/code/kaldi-new \
+  data/asr/test/lattices \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_test 0.067
+
+# (OPTIONAL)
 # Merge lattices based on timing information available
 # Convert to PLF
 asr_util/mainPLF.py -l data/asr/dev/lattices/lattices-pushed \
@@ -20,36 +33,64 @@ asr_util/mainPLF.py -l data/asr/test/lattices/lattices-pushed \
   -o data/asr/test/plf \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim
 
-nohup asr_util/kaldi2NBest.sh /export/a04/gkumar/code/kaldi-new data/asr/dev/nbest /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev 0.067 /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt > nbest_dev.out &
+# Get nbest files
+nohup asr_util/kaldi2NBest.sh \
+  /export/a04/gkumar/code/kaldi-new \
+  data/asr/dev/nbest \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev \
+  0.067 \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt > log/nbest_dev.out &
 
-# Get the 1best files
-nohup asr_util/main1Best.py \
+nohup asr_util/kaldi2NBest.sh \
+  /export/a04/gkumar/code/kaldi-new \
+  data/asr/dev2/nbest \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev2 \
+  0.067 \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt > log/nbest_dev2.out &
+
+nohup asr_util/kaldi2NBest.sh \
+  /export/a04/gkumar/code/kaldi-new \
+  data/asr/test/nbest \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_test \
+  0.067 \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt > log/nbest_test.out &
+
+# Merge 1best files based on timing information
+nohup asr_util/merge1Best.py \
   -i /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev/scoring/15.tra \
   -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
   -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev \
   -o data/asr/dev/1best \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/dev.1best.out &
 
-nohup asr_util/main1Best.py \
+nohup asr_util/merge1Best.py \
   -i /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_dev2/scoring/15.tra \
   -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
   -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev2 \
   -o data/asr/dev2/1best \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/dev2.1best.out &
 
-nohup asr_util/main1Best.py \
+nohup asr_util/merge1Best.py \
   -i /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri6a_dnn/decode_test/scoring/15.tra \
   -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
   -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/test \
   -o data/asr/test/1best \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/test.1best.out &
 
-# Get the nbest files
-nohup asr_util/mainNBest.py \
+# Get the nbest files based on timing information
+nohup asr_util/mergeNBest.py \
   -i data/asr/dev/nbest/all.nbest \
   -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev \
   -o data/asr/dev/nbest \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/dev.nbest.merge.out &
+
+# Clean the 1-best files
+
+# Clean the n-best files
+
+# Generate reference for the n-best files
+
+# Merge lattices
 
 ###############
 # MT Steps

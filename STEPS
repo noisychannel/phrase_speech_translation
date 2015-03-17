@@ -111,12 +111,28 @@ asr_util/replicateReference.py -c data/asr/dev/nbest/asr.ncount -r data/asr/dev/
 asr_util/replicateReference.py -c data/asr/dev/nbest/asr.ncount -r data/asr/dev/ref/fisher_dev.tok.lc.en.1 -o data/asr/dev/nbest/nbest.en.1
 asr_util/replicateReference.py -c data/asr/dev/nbest/asr.ncount -r data/asr/dev/ref/fisher_dev.tok.lc.en.2 -o data/asr/dev/nbest/nbest.en.2
 asr_util/replicateReference.py -c data/asr/dev/nbest/asr.ncount -r data/asr/dev/ref/fisher_dev.tok.lc.en.3 -o data/asr/dev/nbest/nbest.en.3
+asr_util/replicateReference.py -c data/asr/dev2/nbest/asr.ncount -r data/asr/dev2/ref/fisher_dev2.tok.lc.en.0 -o data/asr/dev2/nbest/nbest.en.0
+asr_util/replicateReference.py -c data/asr/dev2/nbest/asr.ncount -r data/asr/dev2/ref/fisher_dev2.tok.lc.en.1 -o data/asr/dev2/nbest/nbest.en.1
+asr_util/replicateReference.py -c data/asr/dev2/nbest/asr.ncount -r data/asr/dev2/ref/fisher_dev2.tok.lc.en.2 -o data/asr/dev2/nbest/nbest.en.2
+asr_util/replicateReference.py -c data/asr/dev2/nbest/asr.ncount -r data/asr/dev2/ref/fisher_dev2.tok.lc.en.3 -o data/asr/dev2/nbest/nbest.en.3
 asr_util/replicateReference.py -c data/asr/test/nbest/asr.ncount -r data/asr/test/ref/fisher_test.tok.lc.en.0 -o data/asr/test/nbest/nbest.en.0
 asr_util/replicateReference.py -c data/asr/test/nbest/asr.ncount -r data/asr/test/ref/fisher_test.tok.lc.en.1 -o data/asr/test/nbest/nbest.en.1
 asr_util/replicateReference.py -c data/asr/test/nbest/asr.ncount -r data/asr/test/ref/fisher_test.tok.lc.en.2 -o data/asr/test/nbest/nbest.en.2
 asr_util/replicateReference.py -c data/asr/test/nbest/asr.ncount -r data/asr/test/ref/fisher_test.tok.lc.en.3 -o data/asr/test/nbest/nbest.en.3
 
 # Merge lattices
+asr_util/mergeLattices.py -l data/asr/dev/lattices/lattices-pushed \
+  -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev -o data/asr/dev/mergedLat \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim
+asr_util/mergeLattices.py -l data/asr/dev2/lattices/lattices-pushed \
+  -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev2 -o data/asr/dev2/mergedLat \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim
+asr_util/mergeLattices.py -l data/asr/test/lattices/lattices-pushed \
+  -s /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/test -o data/asr/test/mergedLat \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim
 
 ###############
 # MT Steps

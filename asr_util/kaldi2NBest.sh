@@ -48,6 +48,7 @@ then
     $KALDI_ROOT/src/latbin/nbest-to-linear ark,t:$bname.nbest ark,t:$bname.ali ark,t:$bname.words \
       ark,t:$bname.lmscore ark,t:$bname.acscore
 
+    # TODO: Change this : Asynchronous writing to the same file is causing problems
     #Convert the int to word for each sentence
     cat $bname.words | $KALDI_ROOT/egs/fisher_callhome_spanish/s5/utils/int2sym.pl -f 2- \
       $symTable >> $allNBest

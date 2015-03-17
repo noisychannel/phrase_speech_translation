@@ -109,37 +109,37 @@ for item in fileList:
         # Concatenate lattices
         mergedTranslation = latticeConcatenate(mergedTranslation, tmp)
 
-      print mergedTranslation
-      if mergedTranslation != "":
+    print mergedTranslation
+    if mergedTranslation != "":
 
-        # Sanjeev's Recipe : Remove epsilons and topo sort
-        finalFST = tmpdir + "/final.fst"
-        os.system("fstrmepsilon " + mergedTranslation + " | fsttopsort - " + finalFST)
+      # Sanjeev's Recipe : Remove epsilons and topo sort
+      finalFST = tmpdir + "/final.fst"
+      os.system("fstrmepsilon " + mergedTranslation + " | fsttopsort - " + finalFST)
 
-        # Now convert to PLF
-        proc = subprocess.Popen('asr_util/fsm2plf.sh ' + symtable +  ' ' + finalFST, stdout=subprocess.PIPE, shell=True)
-        PLFline = proc.stdout.readline()
-        finalPLFFile = tmpdir + "/final.plf"
-        finalPLF = open(finalPLFFile, "w+")
-        finalPLF.write(PLFline)
-        finalPLF.close()
-
-        # now check if this is a valid PLF, if not write it's ID in a 
-        # file so it can be checked later
-        proc = subprocess.Popen(checkPLF + " < " + finalPLFFile + " 2>&1 | awk 'FNR == 2 {print}'", stdout=subprocess.PIPE, shell=True)
-        line = proc.stdout.readline()
-        print line + " " + str(lineNo)
-        if line.strip() != "PLF format appears to be correct.":
-          os.system("cp " + finalFST + " " + invalidplfdir + "/" + timeInfo[0])
-          invalidPLF.write(invalidplfdir + "/" + timeInfo[0] + "\n")
-          rmLines.write(str(lineNo) + "\n")
-        else:
-          provFile.write(PLFline)
-      else:
-        blankPLF.write(timeInfo[0] + "\n")
-        rmLines.write(str(lineNo) + "\n")
       # Now convert to PLF
-      lineNo += 1
+      proc = subprocess.Popen('asr_util/fsm2plf.sh ' + symtable +  ' ' + finalFST, stdout=subprocess.PIPE, shell=True)
+      PLFline = proc.stdout.readline()
+      finalPLFFile = tmpdir + "/final.plf"
+      finalPLF = open(finalPLFFile, "w+")
+      finalPLF.write(PLFline)
+      finalPLF.close()
+
+      # now check if this is a valid PLF, if not write it's ID in a 
+      # file so it can be checked later
+      proc = subprocess.Popen(checkPLF + " < " + finalPLFFile + " 2>&1 | awk 'FNR == 2 {print}'", stdout=subprocess.PIPE, shell=True)
+      line = proc.stdout.readline()
+      print line + " " + str(lineNo)
+      if line.strip() != "PLF format appears to be correct.":
+        os.system("cp " + finalFST + " " + invalidplfdir + "/" + timeInfo[0])
+        invalidPLF.write(invalidplfdir + "/" + timeInfo[0] + "\n")
+        rmLines.write(str(lineNo) + "\n")
+      else:
+        provFile.write(PLFline)
+    else:
+      blankPLF.write(timeInfo[0] + "\n")
+      rmLines.write(str(lineNo) + "\n")
+    # Now convert to PLF
+    lineNo += 1
 
 provFile.close()
 invalidPLF.close()

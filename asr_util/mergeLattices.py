@@ -85,19 +85,19 @@ for item in fileList:
         mergedTranslation = latticeConcatenate(mergedTranslation, tmp)
 
       print mergedTranslation
-      if mergedTranslation != "":
+    if mergedTranslation != "":
 
-        # Sanjeev's Recipe : Remove epsilons and topo sort
-        finalFST = tmpdir + "/final.fst"
-        os.system("fstrmepsilon " + mergedTranslation + " | fsttopsort - " + finalFST)
+      # Sanjeev's Recipe : Remove epsilons and topo sort
+      finalFST = tmpdir + "/final.fst"
+      os.system("fstrmepsilon " + mergedTranslation + " | fsttopsort - " + finalFST)
 
-        # Copy this lattice into our merged lattice dir
-        os.system("mv " + finalFST + " " + finalLatLocation + "/" + str(lineNo) + ".lat")
+      # Copy this lattice into our merged lattice dir
+      os.system("mv " + finalFST + " " + finalLatLocation + "/" + str(lineNo) + ".lat")
 
-      else:
-        blankLat.write(timeInfo[0] + "\n")
-        rmLines.write(str(lineNo) + "\n")
-      lineNo += 1
+    else:
+      blankLat.write(timeInfo[0] + "\n")
+      rmLines.write(str(lineNo) + "\n")
+    lineNo += 1
 
 blankLat.close()
 rmLines.close()

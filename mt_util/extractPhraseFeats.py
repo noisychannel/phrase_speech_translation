@@ -41,12 +41,13 @@ def processPhrase(phrase, details):
   totalSourcePhraseCounts += counts[1]
   unnormalizedphraseUnigramLen = 1./lenFeat * phraseUnigram
   # Phrase table probabilities are in real space
-  phraseEntropy = 0.
-  lexEntropy = 0.
-  for item in details:
-    scores = item[0].strip().split()
-    phraseEntropy += -1. * phraseEntropy * math.log(float(scores[2]))
-    lexEntropy += -1. * phraseEntropy * math.log(float(scores[3]))
+  phraseScores = [float(item[0].strip().split()[2]) for item in details]
+  lexScores = [float(item[0].strip().split()[3]) for item in details]
+  # normalize lex scores
+  lexScores = [x / sum(lexScores) for x in lexScores]
+  # Calculate entropies
+  phraseEntropy = sum([-1. * x * math.log(x) for x in phraseScores])
+  lexEntropy = sum([-1. * x * math.log(x) for x in lexScores])
   outFeats.append([phrase, lenFeat, unnormalizedPhraseUnigram, unnormalizedphraseUnigramLen, phraseEntropy, lexEntropy])
 
 

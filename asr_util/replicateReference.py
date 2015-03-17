@@ -13,7 +13,7 @@ refFile = open(opts.refFile)
 outputFile = open(opts.outputFile, "w+")
 
 for (count, ref) in zip(countFile, refFile):
-  for _ in range(count):
+  for _ in range(int(count)):
     outputFile.write(ref)
 
 outputFile.close()

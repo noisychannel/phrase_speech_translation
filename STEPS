@@ -78,17 +78,43 @@ nohup asr_util/merge1Best.py \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/test.1best.out &
 
 # Get the nbest files based on timing information
+# awk '{s+=$1} END {print s}' asr.ncount
+# to verify if the counts match the nbest hyps
 nohup asr_util/mergeNBest.py \
   -i data/asr/dev/nbest/all.nbest \
   -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev \
   -o data/asr/dev/nbest \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/dev.nbest.merge.out &
+nohup asr_util/mergeNBest.py \
+  -i data/asr/dev2/nbest/all.nbest \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/dev2 \
+  -o data/asr/dev2/nbest \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/dev2.nbest.merge.out &
+nohup asr_util/mergeNBest.py \
+  -i data/asr/test/nbest/all.nbest \
+  -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/test \
+  -o data/asr/test/nbest \
+  -t /export/a04/gkumar/corpora/fishcall/fisher/tim > log/test.nbest.merge.out &
 
 # Clean the 1-best files
+asr_util/cleanASROutput.sh data/asr/dev/1best/asr.1best
+asr_util/cleanASROutput.sh data/asr/dev2/1best/asr.1best
+asr_util/cleanASROutput.sh data/asr/test/1best/asr.1best
 
 # Clean the n-best files
+asr_util/cleanASROutput.sh data/asr/dev/nbest/asr.nbest
+asr_util/cleanASROutput.sh data/asr/dev2/nbest/asr.nbest
+asr_util/cleanASROutput.sh data/asr/test/nbest/asr.nbest
 
 # Generate reference for the n-best files
+asr_util/replicateReference.py -c data/asr/dev/nbest/asr.ncount -r data/asr/dev/ref/fisher_dev.tok.lc.en.0 -o data/asr/dev/nbest/nbest.en.0
+asr_util/replicateReference.py -c data/asr/dev/nbest/asr.ncount -r data/asr/dev/ref/fisher_dev.tok.lc.en.1 -o data/asr/dev/nbest/nbest.en.1
+asr_util/replicateReference.py -c data/asr/dev/nbest/asr.ncount -r data/asr/dev/ref/fisher_dev.tok.lc.en.2 -o data/asr/dev/nbest/nbest.en.2
+asr_util/replicateReference.py -c data/asr/dev/nbest/asr.ncount -r data/asr/dev/ref/fisher_dev.tok.lc.en.3 -o data/asr/dev/nbest/nbest.en.3
+asr_util/replicateReference.py -c data/asr/test/nbest/asr.ncount -r data/asr/test/ref/fisher_test.tok.lc.en.0 -o data/asr/test/nbest/nbest.en.0
+asr_util/replicateReference.py -c data/asr/test/nbest/asr.ncount -r data/asr/test/ref/fisher_test.tok.lc.en.1 -o data/asr/test/nbest/nbest.en.1
+asr_util/replicateReference.py -c data/asr/test/nbest/asr.ncount -r data/asr/test/ref/fisher_test.tok.lc.en.2 -o data/asr/test/nbest/nbest.en.2
+asr_util/replicateReference.py -c data/asr/test/nbest/asr.ncount -r data/asr/test/ref/fisher_test.tok.lc.en.3 -o data/asr/test/nbest/nbest.en.3
 
 # Merge lattices
 

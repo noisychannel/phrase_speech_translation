@@ -12,7 +12,7 @@ if [ $# -lt 4 ]; then
 fi
 
 prunebeam=13
-maxProcesses=10
+maxProcesses=5
 
 KALDI_ROOT=$1
 latdir=$2

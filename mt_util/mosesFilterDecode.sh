@@ -55,7 +55,7 @@ $MOSES/scripts/generic/moses-parallel.pl \
   -decoder $MOSES/bin/moses \
   -config $eval_dir/test.filtered.ini.1 \
   -i $eval_dir/test.input.tok.1 \
-  -jobs 12 \
+  -jobs 24 \
   -queue-parameters '-q *@[b]* -pe smp 6' 1>$eval_dir/test.output
 
 echo 'finished at '`date`

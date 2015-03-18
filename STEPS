@@ -134,6 +134,11 @@ asr_util/mergeLattices.py -l data/asr/test/lattices/lattices-pushed \
   -c /export/a04/gkumar/corpora/fishcall/jack-splits/split-matt/test -o data/asr/test/mergedLat \
   -t /export/a04/gkumar/corpora/fishcall/fisher/tim
 
+# Remove weights from lattices (needed for some experiments)
+asr_util/removeLatWeights.sh data/asr/dev/mergedLat/finalLat data/asr/dev/mergedLat/noWeightLat
+asr_util/removeLatWeights.sh data/asr/dev2/mergedLat/finalLat data/asr/dev2/mergedLat/noWeightLat
+asr_util/removeLatWeights.sh data/asr/test/mergedLat/finalLat data/asr/test/mergedLat/noWeightLat
+
 ###############
 # MT Steps
 # TODO
@@ -156,10 +161,27 @@ nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/7 \
   /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/5/model > log/decode.nbest.test.out &
 
-# Convert the Moses phrase table to an FST
-mt_util/phraseTable2FST.py -p /export/a04/gkumar/experiments/is2015/1/model/phrase-table.1.gz -f data/mt/phrase-table.fst.txt -s data/mt/syms.txt
-# Compile this fst
-fstcompile data/mt/phrase-table.fst.txt data/mt/phrase-table.fst.bin
+# Create a phrase table that does not use smoothing
+
+# Extract features from the phrase table
+time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/4/model/phrase-table.ns.1.gz -o data/mt/phrase_feats
+
+# Create the feat file to an FST, requires a weight file
+time mt_util/phrase2FST.py \
+  -p data/mt/phrase_feats \
+  -f exp/1/S.fst.txt \
+  -s exp/1/syms.txt \
+  -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -w exp/1/weights.init
+
+# Compile the segmentation transducer
+fstcompile --arc_type=log S.fst.txt S.fst
+
+# Create phrase lattices
+nohup mt_util/createPhraseLattice.sh data/asr/dev/mergedLat/noWeightLat/ \
+  exp/1/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/1/res > log/p.log &
+
 
 ##############
 # Interface steps

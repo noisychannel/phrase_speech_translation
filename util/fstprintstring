@@ -5,8 +5,10 @@
 #
 # Prints a random output string from the FST.
 
-fstshortestpath --nshortest $2 --unique $1 | \
+syms=$2
+
+fstshortestpath $1 | \
   fstproject --project_output=true | \
-  fstrmepsilon | fsttopsort | fstprint | cut -sf4 | \
+  fstrmepsilon | fsttopsort | fstprint --isymbols=$syms --osymbols=$syms | cut -sf4 | \
   perl -0777 -pe 's/^0x20$/ /mg; if (/[^\n][^\n]/) { s/\n/ /g } else { s/\n//g } $_.="\n"'
   # perl script changes 0x20 to space, then turns newlines into spaces if any symbols have length > 1, and else deletes them.

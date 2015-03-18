@@ -9,6 +9,8 @@ Author : Gaurav Kumar (Johns Hopkins University)
 import gzip
 import argparse
 import math
+import codecs
+import sys
 
 parser = argparse.ArgumentParser("Extracts features from a Moses phrase table")
 parser.add_argument("-p", "--phrase-table", dest="phraseTable", help="The location of the phrase table")
@@ -20,7 +22,7 @@ if opts.phraseTable is None or opts.outFeats is None:
   sys.exit(1)
 
 phraseTable = gzip.open(opts.phraseTable)
-outFeats = codecs.open(opts.outFeats, "w+", encoding="utf8")
+outFeats = open(opts.outFeats, "w+")
 
 outFeatsList = []
 totalSourcePhraseCounts = 0
@@ -34,21 +36,24 @@ def processPhrase(phrase, details):
   4. Phrase translation Entropy
   5. Lexical translation Entropy
   '''
+  global totalSourcePhraseCounts
+
   # Target, Source, Joint
   counts = details[0][2].strip().split()
-  lenFeat = len(phrase)
+  counts = [int(count) for count in counts]
+  lenFeat = len(phrase.split())
   unnormalizedPhraseUnigram = math.log(counts[1])
   totalSourcePhraseCounts += counts[1]
-  unnormalizedphraseUnigramLen = 1./lenFeat * phraseUnigram
+  unnormalizedphraseUnigramLen = 1./lenFeat * unnormalizedPhraseUnigram
   # Phrase table probabilities are in real space
   phraseScores = [float(item[0].strip().split()[2]) for item in details]
   lexScores = [float(item[0].strip().split()[3]) for item in details]
   # normalize lex scores
   lexScores = [x / sum(lexScores) for x in lexScores]
   # Calculate entropies
-  phraseEntropy = sum([-1. * x * math.log(x) for x in phraseScores])
-  lexEntropy = sum([-1. * x * math.log(x) for x in lexScores])
-  outFeats.append([phrase, lenFeat, unnormalizedPhraseUnigram, unnormalizedphraseUnigramLen, phraseEntropy, lexEntropy])
+  phraseEntropy = sum([-1. * x * math.log(x, 2) for x in phraseScores])
+  lexEntropy = sum([-1. * x * math.log(x, 2) for x in lexScores])
+  outFeatsList.append([phrase, lenFeat, unnormalizedPhraseUnigram, unnormalizedphraseUnigramLen, phraseEntropy, lexEntropy])
 
 
 def normalizeCountFeats():
@@ -75,7 +80,7 @@ for line in phraseTable:
     currentPhraseDetails.append(phraseInfo[2:])
   else:
     # First process the previous phrase
-    if phrase != "":
+    if currentSourcePhrase != "":
       processPhrase(currentSourcePhrase, currentPhraseDetails)
     # Reset variables
     currentSourcePhrase = sourcePhrase

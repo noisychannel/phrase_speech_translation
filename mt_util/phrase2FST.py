@@ -7,6 +7,8 @@ into a binary using fstcompile
 Also writes a symbol table with the vocbulary and the corresponding
 symbol IDs
 
+Filters the phrase table to only use phrases that the ASR system can produce
+
 Author : Gaurav Kumar (Johns Hopkins University)
 """
 
@@ -29,20 +31,22 @@ if opts.phraseFeats is None or opts.FSTFile is None or opts.symFile is None:
 
 phraseFeats = codecs.open(opts.phraseFeats, encoding="utf8")
 FSTFile = open(opts.FSTFile, "w+")
-symFile = open(opts.symFile, "w+")
+symFile = codecs.open(opts.symFile, "w+", encoding="utf8")
+# Only write output symbols to one file to make processing faster
 weightsFile = open(opts.weightsFile)
 
+vocabulary = {}
 # Read external symbol file first (if available)
 if opts.eSymFile is not None:
-  eSymFile = open(opts.eSymFile)
+  eSymFile = codecs.open(opts.eSymFile, encoding="utf8")
   for line in eSymFile:
     lineDetails = line.strip().split()
     # Expected format : symbol id
     vocabulary[lineDetails[0]] = int(lineDetails[1])
     symFile.write(line + "\n")
 else:
-  vocabulary = {"<eps>":0}
-  symFile.write("<eps> 0\n")
+  parser.print_help()
+  sys.exit(1)
 
 # Write final state to the FST
 FSTFile.write("0\n")
@@ -52,16 +56,19 @@ FSTFile.write("0\n")
 vocabID = len(vocabulary.keys())
 stateID = 1
 
-def getVocabID(word):
+def getVocabID(word, isPhrase):
   """
   Returns the vocabulary ID of the word argument
   If the word is not in the vocabulary, it is added
   """
   global vocabID, symFile
   if word not in vocabulary:
-    vocabulary[word] = vocabID
-    symFile.write(word + " " + str(vocabID) + "\n")
-    vocabID = vocabID + 1
+    if isPhrase:
+      vocabulary[word] = vocabID
+      symFile.write(word + " " + str(vocabID) + "\n")
+      vocabID = vocabID + 1
+    else:
+      return False
   return str(vocabulary[word])
 
 weights = []
@@ -84,19 +91,31 @@ for phrase, cost in sourcePhrases.iteritems():
   phraseComp = phrase.split()
   if len(phraseComp) == 1:
     # Single word phrase, the path starts and ends at 0
-    FSTFile.write("0 0 " + getVocabID(phraseComp[0]) + " " + getVocabID(phraseComp[0]) + " " + cost + "\n")
+    vocabEntry = getVocabID(phraseComp[0], False)
+    if vocabEntry:
+      FSTFile.write("0 0 " + vocabEntry + " " + vocabEntry + " " + str(cost) + "\n")
   else:
     # Create a path, starts at 0, ends at 0 with intermediate states
     currentState = 0
     nextState = stateID
+    writeQueue = []
     for item in phraseComp:
-      FSTFile.write(str(currentState) + " " + str(nextState) + " " + getVocabID(item) + " 0\n")
-      currentState = nextState
-      nextState = nextState + 1
-    stateID = nextState
-    FSTFile.write(str(currentState) + " 0 0 " + getVocabID("_".join(phraseComp)) + " " + cost + "\n")
+      vocabEntry = getVocabID(item, False)
+      if vocabEntry:
+        writeQueue.append(str(currentState) + " " + str(nextState) + " " + vocabEntry + " 0\n")
+        currentState = nextState
+        nextState = nextState + 1
+      else:
+        # This phrase can never be used by the ASR output
+        writeQueue = []
+        break
+    if len(writeQueue) != 0:
+      for line in writeQueue:
+        FSTFile.write(line)
+      stateID = nextState
+      FSTFile.write(str(currentState) + " 0 0 " + getVocabID("_".join(phraseComp), True) + " " + str(cost) + "\n")
 
 symFile.close()
 eSymFile.close()
 FSTFile.close()
-phraseTable.close()
+phraseFeats.close()

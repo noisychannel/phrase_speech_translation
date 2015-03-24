@@ -12,6 +12,7 @@ bname=${l##*/}
 fstcompose $l $outputDir/S.sort.fst \
   | fstproject | fstprint \
   | fstcompile | fstprune --weight=0 | fstrmepsilon \
-  | fstminimize | fstdeterminize \
-  | /export/a04/gkumar/code/custom/phrase_speech_translation/util/fstprintstring - $syms \
+  | fstminimize | fstdeterminize > $outputDir/lat/$bname
+
+  /export/a04/gkumar/code/custom/phrase_speech_translation/util/fstprintstring $outputDir/lat/$bname $syms \
   >> $outputDir/1best/$bname.1best

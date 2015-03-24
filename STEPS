@@ -141,8 +141,6 @@ asr_util/removeLatWeights.sh data/asr/test/mergedLat/finalLat data/asr/test/merg
 
 ###############
 # MT Steps
-# TODO
-# 1. How do you match vocabulary and symbol IDs with the ASR corpus
 ###############
 
 # Decode n-best list
@@ -177,14 +175,62 @@ time mt_util/phrase2FST.py \
 # Compile the segmentation transducer
 fstcompile --arc_type=log S.fst.txt S.fst
 
+############ LENGTH BASED FEATURES #################
 # Create phrase lattices
 nohup mt_util/createPhraseLattice.sh data/asr/dev/mergedLat/noWeightLat/ \
   exp/1/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
   exp/1/res > log/p.log &
 
+nohup mt_util/createPhraseLattice.sh data/asr/dev2/mergedLat/noWeightLat/ \
+  exp/1/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/1_dev2/res > log/p.dev2.1.log &
 
+nohup mt_util/createPhraseLattice.sh data/asr/test/mergedLat/noWeightLat/ \
+  exp/1/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/1_test/res > log/p.test.1.log &
+
+# Extract the 1-best lat files 
+mt_util/get1Best.py -i exp/1/res/1best -a data/asr/dev/1best/asr.1best.clean -o exp/1/res/1best/dev.lat.1best
+mt_util/get1Best.py -i exp/1_dev2/res/1best -a data/asr/dev2/1best/asr.1best.clean -o exp/1_dev2/res/1best/dev2.lat.1best
+mt_util/get1Best.py -i exp/1_test/res/1best -a data/asr/test/1best/asr.1best.clean -o exp/1_test/res/1best/test.lat.1best
+
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/9 \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/exp/1_dev2/res/1best/dev2.lat.1best \
+  /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/5/model > log/decode.l.1.1best.dev2.out &
+
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/10 \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/exp/1_test/res/1best/test.lat.1best \
+  /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/5/model > log/decode.l.1.1best.test.out &
+
+############ ASR DRAWS #################
+# Create phrase lattices
+
+nohup mt_util/asrDrawsMain.sh data/asr/dev2/mergedLat/noWeightLat/ data/asr/dev2/mergedLat/finalLat \
+  exp/1_dev/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/2_dev2/res > log/p.dev2.2.log &
+
+nohup mt_util/asrDrawsMain.sh data/asr/test/mergedLat/noWeightLat/ data/asr/test/mergedLat/finalLat \
+  exp/1_dev/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/2_test/res > log/p.test.2.log &
+
+# Extract the 1-best lat files 
+mt_util/get1Best.py -i exp/2_dev2/res/1best -a data/asr/dev2/1best/asr.1best.clean -o exp/2_dev2/res/1best/dev2.lat.1best
+mt_util/get1Best.py -i exp/2_test/res/1best -a data/asr/test/1best/asr.1best.clean -o exp/2_test/res/1best/test.lat.1best
+
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/11 \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/exp/2_dev2/res/1best/dev2.lat.1best \
+  /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/5/model > log/decode.l.2.1best.dev2.out &
+
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/12 \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/exp/2_test/res/1best/test.lat.1best \
+  /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/5/model > log/decode.l.2.1best.test.out &
 ##############
 # Interface steps
 # ############
 # To get sentence level BLEU
 /export/a04/gkumar/code/mosesdecoder/bin/sentence-bleu refs... < cand
+nohup /export/a04/gkumar/code/mosesdecoder/bin/sentence-bleu nbest.en.0 nbest.en.1 nbest.en.2 nbest.en.3 < asr.nbest.clean > nbest.scores

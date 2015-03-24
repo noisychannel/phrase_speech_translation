@@ -2,16 +2,17 @@
 
 # The directory that contains the word lattices
 inputDir=$1
+weight=$2
 # The phrase segmentation transducer
-segmentationTransducer=$2
+segmentationTransducer=$3
 # The directory where the phrase lattice will be put
-syms=$3
-outputDir=$4
+syms=$4
+outputDir=$5
 
 #numJobs=100
 
-if [ $# -ne 4 ]; then
-  echo "USAGE : ./createPhraseLattice.sh [INPUT-DIR] [SEG-TRANSDUCER] [SYMS] [OUTPUT-DIR]"
+if [ $# -ne 5 ]; then
+  echo "USAGE : ./createPhraseLattice.sh [INPUT-DIR] [WEIGHTED-DIR] [SEG-TRANSDUCER] [SYMS] [OUTPUT-DIR]"
   exit 1
 fi
 
@@ -34,11 +35,12 @@ do
   #done
 
   bname=${l##*/}
-  qsub -l 'arch=*64*' -cwd -j y -o $outputDir/log/$bname.log -v input=$l,output_dir=$outputDir,sym=$syms mt_util/createSinglePhraseLattice.sh
+  qsub -l 'arch=*64*' -cwd -j y -o $outputDir/log/$bname.log \
+    -v input=$l,input_weighted=$weight/$bname,output_dir=$outputDir,sym=$syms mt_util/asrDrawsPhraseLattice.sh
 done
 
 # Wait for jobs to finish
-while [ `qstat | grep -c createSing` -ne 0 ]; do
+while [ `qstat | grep -c asrDrawsPh` -ne 0 ]; do
   sleep 5
 done
 

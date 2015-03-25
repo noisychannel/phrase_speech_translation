@@ -44,6 +44,8 @@ def processPhrase(phrase, details):
   # The phrase count feature is always set to 1, this is for phrase counting
   countFeat = 1
   lenFeat = len(phrase.split())
+  # The LM probabiliy should be in the log semiring (-ve log weights, lower is better)
+  # This switch is made later, after the counts are normalized
   unnormalizedPhraseUnigram = math.log(counts[1])
   totalSourcePhraseCounts += counts[1]
   unnormalizedphraseUnigramLen = 1./lenFeat * unnormalizedPhraseUnigram
@@ -52,20 +54,24 @@ def processPhrase(phrase, details):
   lexScores = [float(item[0].strip().split()[3]) for item in details]
   # normalize lex scores
   lexScores = [x / sum(lexScores) for x in lexScores]
-  # Calculate entropies
+  # Calculate entropies, lower is better
   phraseEntropy = sum([-1. * x * math.log(x, 2) for x in phraseScores])
   lexEntropy = sum([-1. * x * math.log(x, 2) for x in lexScores])
-  outFeatsList.append([phrase, countFeat, unnormalizedPhraseUnigram, unnormalizedphraseUnigramLen, phraseEntropy, lexEntropy])
+  # Lenfeat is sent out for use in normalization later
+  outFeatsList.append(([phrase, countFeat, unnormalizedPhraseUnigram, unnormalizedphraseUnigramLen, phraseEntropy, lexEntropy], lenFeat))
 
 
 def normalizeCountFeats():
-  for feats in outFeatsList:
+  for feats, lenFeat in outFeatsList:
     feats[2] = feats[2] - math.log(totalSourcePhraseCounts)
-    feats[3] = feats[3] - 1./feats[1] * math.log(totalSourcePhraseCounts)
+    feats[3] = feats[3] - 1./lenFeat * math.log(totalSourcePhraseCounts)
+    # Switch to using negative log probs, lower is better
+    feats[2] = -1. * feats[2]
+    feats[3] = -1. * feats[3]
 
 
 def writeFeats():
-  for feats in outFeatsList:
+  for feats, _ in outFeatsList:
     strFeats = [str(x) for x in feats]
     outFeats.write("\t".join(strFeats) + "\n")
 

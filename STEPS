@@ -160,6 +160,21 @@ nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/7 \
   /export/a04/gkumar/experiments/is2015/5/model > log/decode.nbest.test.out &
 
 # Create a phrase table that does not use smoothing
+# Filter phrase table based on the dataset
+nohup mt_util/filterPhraseTable.sh /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_dev \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/data/asr/dev/nbest/asr.nbest.clean \
+  /export/a04/gkumar/experiments/is2015/4/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/4/model > log/filter.dev.out &
+
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_dev2 \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/data/asr/dev2/nbest/asr.nbest.clean \
+  /export/a04/gkumar/experiments/is2015/4/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/4/model > log/filter.dev2.out &
+
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_test \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/data/asr/test/nbest/asr.nbest.clean \
+  /export/a04/gkumar/experiments/is2015/4/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/4/model > log/filter.test.out &
 
 # Extract features from the phrase table, use filtered phrase tables
 time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/8/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev
@@ -175,13 +190,13 @@ time mt_util/phrase2FST.py \
   -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
   -w exp/1_dev/weights.init
 time mt_util/phrase2FST.py \
-  -p data/mt/phrase_feats.dev \
+  -p data/mt/phrase_feats.dev2 \
   -f exp/1_dev2/S.dev2.fst.txt \
   -s exp/1_dev2/syms.dev2.txt \
   -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
   -w exp/1_dev2/weights.init
 time mt_util/phrase2FST.py \
-  -p data/mt/phrase_feats.dev \
+  -p data/mt/phrase_feats.test \
   -f exp/1_test/S.test.fst.txt \
   -s exp/1_test/syms.test.txt \
   -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
@@ -225,26 +240,83 @@ nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/14 \
 # Create phrase lattices
 
 nohup mt_util/asrDrawsMain.sh data/asr/dev2/mergedLat/noWeightLat/ data/asr/dev2/mergedLat/finalLat \
-  exp/1_dev/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
-  exp/2_dev2/res > log/p.dev2.2.log &
+  exp/1_dev2/S.dev2.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/2_dev2/res > log/pl.dev2.2.log &
 
 nohup mt_util/asrDrawsMain.sh data/asr/test/mergedLat/noWeightLat/ data/asr/test/mergedLat/finalLat \
-  exp/1_dev/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
-  exp/2_test/res > log/p.test.2.log &
+  exp/1_test/S.test.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/2_test/res > log/pl.test.2.log &
 
 # Extract the 1-best lat files 
 mt_util/get1Best.py -i exp/2_dev2/res/1best -a data/asr/dev2/1best/asr.1best.clean -o exp/2_dev2/res/1best/dev2.lat.1best
 mt_util/get1Best.py -i exp/2_test/res/1best -a data/asr/test/1best/asr.1best.clean -o exp/2_test/res/1best/test.lat.1best
 
-nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/11 \
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/15 \
   /export/a04/gkumar/code/custom/phrase_speech_translation/exp/2_dev2/res/1best/dev2.lat.1best \
   /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/5/model > log/decode.l.2.1best.dev2.out &
 
-nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/12 \
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/16 \
   /export/a04/gkumar/code/custom/phrase_speech_translation/exp/2_test/res/1best/test.lat.1best \
   /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/5/model > log/decode.l.2.1best.test.out &
+
+######## Experiment 3,4,5,6 ##############
+#!/usr/bin/env bash
+
+######## Experiment 3 : 0 1 0 0 0 ##############
+exp=3
+mt1=17
+mt2=18
+
+time mt_util/phrase2FST.py \
+  -p data/mt/phrase_feats.dev2 \
+  -f exp/${exp}_dev2/S.dev2.fst.txt \
+  -s exp/${exp}_dev2/syms.dev2.txt \
+  -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -w exp/${exp}_dev2/weights.init
+time mt_util/phrase2FST.py \
+  -p data/mt/phrase_feats.test \
+  -f exp/${exp}_test/S.test.fst.txt \
+  -s exp/${exp}_test/syms.test.txt \
+  -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -w exp/${exp}_test/weights.init
+
+# Compile the segmentation transducer
+fstcompile --arc_type=log exp/${exp}_dev2/S.dev2.fst.txt exp/${exp}_dev2/S.dev2.fst
+fstcompile --arc_type=log exp/${exp}_test/ S.test.fst.txt exp/${exp}_test/S.test.fst
+
+# Create phrase lattices
+mt_util/createPhraseLattice.sh data/asr/dev2/mergedLat/noWeightLat/ \
+  exp/${exp}_dev2/S.dev2.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/${exp}_dev2/res
+
+mt_util/createPhraseLattice.sh data/asr/test/mergedLat/noWeightLat/ \
+  exp/${exp}_test/S.test.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/${exp}_test/res
+
+# Extract the 1-best lat files 
+mt_util/get1Best.py -i exp/${exp}_dev2/res/1best -a data/asr/dev2/1best/asr.1best.clean -o exp/${exp}_dev2/res/1best/dev2.lat.1best
+mt_util/get1Best.py -i exp/${exp}_test/res/1best -a data/asr/test/1best/asr.1best.clean -o exp/${exp}_test/res/1best/test.lat.1best
+
+(
+mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/$mt1 \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/exp/${exp}_dev2/res/1best/dev2.lat.1best \
+  /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/5/model
+) &
+
+(
+mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/$mt2 \
+  /export/a04/gkumar/code/custom/phrase_speech_translation/exp/${exp}_test/res/1best/test.lat.1best \
+  /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
+  /export/a04/gkumar/experiments/is2015/5/model
+) &
+
+wait
+
+echo "Done."
+
 ##############
 # Interface steps
 # ############

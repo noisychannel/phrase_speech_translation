@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 l=${input}
-lw=${input_weighted%.*}
+lw=${input_weighted}
 outputDir=${output_dir}
 syms=${sym}
 

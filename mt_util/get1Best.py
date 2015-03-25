@@ -19,6 +19,7 @@ asrBest = open(opts.asrBest)
 output = open(opts.output, "w+")
 
 for lineNo, line in enumerate(asrBest):
+  line = line.strip()
   actualLineNo = lineNo + 1
   if os.path.exists(inputDir + "/" + str(actualLineNo) + ".lat.1best"):
     f = open(inputDir + "/" + str(actualLineNo) + ".lat.1best").readline()
@@ -26,11 +27,11 @@ for lineNo, line in enumerate(asrBest):
       # Lat hyp is empty, write the asr 1-best instead
       # There is very little hope of translating this since
       # no phrase match was found for this entry
-      output.write(line)
+      output.write(line + "\n")
     else:
-      output.write(f)
+      output.write(f.strip() + "\n")
   else:
-    output.write(line)
+    output.write(line + "\n")
 
 asrBest.close()
 output.close()

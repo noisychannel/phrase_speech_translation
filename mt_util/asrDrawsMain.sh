@@ -8,11 +8,12 @@ segmentationTransducer=$3
 # The directory where the phrase lattice will be put
 syms=$4
 outputDir=$5
+pruneBeam=$6
 
 numJobs=200
 
-if [ $# -ne 5 ]; then
-  echo "USAGE : ./createPhraseLattice.sh [INPUT-DIR] [WEIGHTED-DIR] [SEG-TRANSDUCER] [SYMS] [OUTPUT-DIR]"
+if [ $# -ne 6 ]; then
+  echo "USAGE : ./createPhraseLattice.sh [INPUT-DIR] [WEIGHTED-DIR] [SEG-TRANSDUCER] [SYMS] [OUTPUT-DIR] [BEAM]"
   exit 1
 fi
 
@@ -36,7 +37,7 @@ do
 
   bname=${l##*/}
   qsub -l 'arch=*64*' -cwd -j y -o $outputDir/log/$bname.log \
-    -v input=$l,input_weighted=$weight/$bname,output_dir=$outputDir,sym=$syms mt_util/asrDrawsPhraseLattice.sh
+    -v input=$l,input_weighted=$weight/$bname,output_dir=$outputDir,sym=$syms,beam=$pruneBeam mt_util/asrDrawsPhraseLattice.sh
 done
 
 # Wait for jobs to finish

@@ -4,6 +4,7 @@ l=${input}
 lw=${input_weighted}
 outputDir=${output_dir}
 syms=${sym}
+pruneBeam=${beam}
 
 echo $l
 echo $outputDir
@@ -11,7 +12,7 @@ echo $syms
 
 bname=${l##*/}
 fstcompose $l $outputDir/S.sort.fst \
-  | fstproject | fstprint | fstcompile | fstprune --weight=0 | fstprint \
+  | fstproject | fstprint | fstcompile | fstprune --weight=$pruneBeam | fstprint \
   | awk '{if (NF == 5) {$5 = ""}; print $_}' | sed 's: *$::g' \
   | fstcompile --arc_type=log | fstarcsort \
   | fstcompose $lw - | fstprint | fstcompile | fstprune --weight=0 | fstrmepsilon \

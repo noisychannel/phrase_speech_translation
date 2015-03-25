@@ -166,21 +166,23 @@ nohup mt_util/filterPhraseTable.sh /export/a04/gkumar/code/custom/phrase_speech_
   /export/a04/gkumar/experiments/is2015/4/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/4/model > log/filter.dev.out &
 
-nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_dev2 \
+nohup mt_util/filterPhraseTable.sh /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_dev2 \
   /export/a04/gkumar/code/custom/phrase_speech_translation/data/asr/dev2/nbest/asr.nbest.clean \
   /export/a04/gkumar/experiments/is2015/4/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/4/model > log/filter.dev2.out &
 
-nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_test \
+nohup mt_util/filterPhraseTable.sh /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_test \
   /export/a04/gkumar/code/custom/phrase_speech_translation/data/asr/test/nbest/asr.nbest.clean \
   /export/a04/gkumar/experiments/is2015/4/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/4/model > log/filter.test.out &
 
 # Extract features from the phrase table, use filtered phrase tables
-time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/8/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev
-time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/6/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev2
-time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/7/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.test
-#time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/4/model/phrase-table.ns.1.gz -o data/mt/phrase_feats
+#time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/8/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev
+#time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/6/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev2
+#time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/7/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.test
+time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_dev/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev
+time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_dev2/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev2
+time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/code/custom/phrase_speech_translation/data/mt/table_test/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.test
 
 # Create the feat file to an FST, requires a weight file
 time mt_util/phrase2FST.py \

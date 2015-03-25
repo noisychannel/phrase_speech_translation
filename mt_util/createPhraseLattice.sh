@@ -8,7 +8,7 @@ segmentationTransducer=$2
 syms=$3
 outputDir=$4
 
-#numJobs=100
+numJobs=200
 
 if [ $# -ne 4 ]; then
   echo "USAGE : ./createPhraseLattice.sh [INPUT-DIR] [SEG-TRANSDUCER] [SYMS] [OUTPUT-DIR]"
@@ -29,9 +29,9 @@ fstarcsort $segmentationTransducer $outputDir/S.sort.fst
 for l in `ls -v $inputDir/*.lat`
 do
   # Check for job limit
-  #while [ `qstat | grep -c createSing` -ge $numJobs ]; do
-    #sleep 5
-  #done
+  while [ `qstat | grep -c createSing` -ge $numJobs ]; do
+    sleep 5
+  done
 
   bname=${l##*/}
   qsub -l 'arch=*64*' -cwd -j y -o $outputDir/log/$bname.log -v input=$l,output_dir=$outputDir,sym=$syms mt_util/createSinglePhraseLattice.sh

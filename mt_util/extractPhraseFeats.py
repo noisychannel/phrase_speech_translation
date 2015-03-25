@@ -30,7 +30,7 @@ totalSourcePhraseCounts = 0
 def processPhrase(phrase, details):
   '''
   Features : 
-  1. Length
+  1. Count feature
   2. Phrase unigram probability
   3. Length normalized phrase unigram probability
   4. Phrase translation Entropy
@@ -41,6 +41,8 @@ def processPhrase(phrase, details):
   # Target, Source, Joint
   counts = details[0][2].strip().split()
   counts = [int(count) for count in counts]
+  # The phrase count feature is always set to 1, this is for phrase counting
+  countFeat = 1
   lenFeat = len(phrase.split())
   unnormalizedPhraseUnigram = math.log(counts[1])
   totalSourcePhraseCounts += counts[1]
@@ -53,7 +55,7 @@ def processPhrase(phrase, details):
   # Calculate entropies
   phraseEntropy = sum([-1. * x * math.log(x, 2) for x in phraseScores])
   lexEntropy = sum([-1. * x * math.log(x, 2) for x in lexScores])
-  outFeatsList.append([phrase, lenFeat, unnormalizedPhraseUnigram, unnormalizedphraseUnigramLen, phraseEntropy, lexEntropy])
+  outFeatsList.append([phrase, countFeat, unnormalizedPhraseUnigram, unnormalizedphraseUnigramLen, phraseEntropy, lexEntropy])
 
 
 def normalizeCountFeats():

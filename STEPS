@@ -161,45 +161,62 @@ nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/7 \
 
 # Create a phrase table that does not use smoothing
 
-# Extract features from the phrase table
-time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/4/model/phrase-table.ns.1.gz -o data/mt/phrase_feats
+# Extract features from the phrase table, use filtered phrase tables
+time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/8/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev
+time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/6/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.dev2
+time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/7/evaluation/test.filtered.1/phrase-table.0-0.1.1.gz -o data/mt/phrase_feats.test
+#time mt_util/extractPhraseFeats.py -p /export/a04/gkumar/experiments/is2015/4/model/phrase-table.ns.1.gz -o data/mt/phrase_feats
 
 # Create the feat file to an FST, requires a weight file
 time mt_util/phrase2FST.py \
-  -p data/mt/phrase_feats \
-  -f exp/1/S.fst.txt \
-  -s exp/1/syms.txt \
+  -p data/mt/phrase_feats.dev \
+  -f exp/1_dev/S.dev.fst.txt \
+  -s exp/1_dev/syms.dev.txt \
   -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
-  -w exp/1/weights.init
+  -w exp/1_dev/weights.init
+time mt_util/phrase2FST.py \
+  -p data/mt/phrase_feats.dev \
+  -f exp/1_dev2/S.dev2.fst.txt \
+  -s exp/1_dev2/syms.dev2.txt \
+  -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -w exp/1_dev2/weights.init
+time mt_util/phrase2FST.py \
+  -p data/mt/phrase_feats.dev \
+  -f exp/1_test/S.test.fst.txt \
+  -s exp/1_test/syms.test.txt \
+  -e /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  -w exp/1_test/weights.init
 
 # Compile the segmentation transducer
-fstcompile --arc_type=log S.fst.txt S.fst
+fstcompile --arc_type=log S.dev.fst.txt S.dev.fst
+fstcompile --arc_type=log S.dev2.fst.txt S.dev2.fst
+fstcompile --arc_type=log S.test.fst.txt S.test.fst
 
 ############ LENGTH BASED FEATURES #################
 # Create phrase lattices
 nohup mt_util/createPhraseLattice.sh data/asr/dev/mergedLat/noWeightLat/ \
-  exp/1/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
-  exp/1/res > log/p.log &
+  exp/1_dev/S.dev.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/1_dev/res > log/pl.dev.log &
 
 nohup mt_util/createPhraseLattice.sh data/asr/dev2/mergedLat/noWeightLat/ \
-  exp/1/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
-  exp/1_dev2/res > log/p.dev2.1.log &
+  exp/1_dev2/S.dev2.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/1_dev2/res > log/pl.dev2.log &
 
 nohup mt_util/createPhraseLattice.sh data/asr/test/mergedLat/noWeightLat/ \
-  exp/1/S.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
-  exp/1_test/res > log/p.test.1.log &
+  exp/1_test/S.test.fst /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  exp/1_test/res > log/pl.test.log &
 
 # Extract the 1-best lat files 
-mt_util/get1Best.py -i exp/1/res/1best -a data/asr/dev/1best/asr.1best.clean -o exp/1/res/1best/dev.lat.1best
+mt_util/get1Best.py -i exp/1_dev/res/1best -a data/asr/dev/1best/asr.1best.clean -o exp/1_dev/res/1best/dev.lat.1best
 mt_util/get1Best.py -i exp/1_dev2/res/1best -a data/asr/dev2/1best/asr.1best.clean -o exp/1_dev2/res/1best/dev2.lat.1best
 mt_util/get1Best.py -i exp/1_test/res/1best -a data/asr/test/1best/asr.1best.clean -o exp/1_test/res/1best/test.lat.1best
 
-nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/9 \
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/13 \
   /export/a04/gkumar/code/custom/phrase_speech_translation/exp/1_dev2/res/1best/dev2.lat.1best \
   /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/5/model > log/decode.l.1.1best.dev2.out &
 
-nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/10 \
+nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/14 \
   /export/a04/gkumar/code/custom/phrase_speech_translation/exp/1_test/res/1best/test.lat.1best \
   /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/5/model > log/decode.l.1.1best.test.out &
@@ -233,4 +250,4 @@ nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/12 \
 # ############
 # To get sentence level BLEU
 /export/a04/gkumar/code/mosesdecoder/bin/sentence-bleu refs... < cand
-nohup /export/a04/gkumar/code/mosesdecoder/bin/sentence-bleu nbest.en.0 nbest.en.1 nbest.en.2 nbest.en.3 < asr.nbest.clean > nbest.scores
+

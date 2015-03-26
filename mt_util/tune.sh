@@ -17,7 +17,7 @@ tuneTemplate=$5
 numJobs=200
 stage=0
 
-if [ $# -ne 6 ]; then
+if [ $# -ne 5 ]; then
   echo "USAGE : ./tune.sh [LAT-DIR] [TUNE-DIR] [FEAT-FILE] [SYMSFILE] [TUNE-TEMPLATE]"
   exit 1
 fi
@@ -26,23 +26,25 @@ if [ $stage -le 0 ]; then
 
   rm -rf $tuneDir/*
 
-  mkdir -p $tuneDir/pASRlat
+  mkdir -p $tuneDir/lat
   mkdir -p $tuneDir/pre/log
-  pASRlat=$tuneDir/pASRlat
 
   # Create a dummy weights file
-  printf "0.0\n0.0\n0.0\0.0" > $tuneDir/pre/weights.txt
+  printf "0.0\n0.0\n0.0\n0.0" > $tuneDir/pre/weights.txt
 
   # The dev set is hardcoded for tuning here
   time mt_util/phrase2FST.py \
     -p $featFile \
     -f $tuneDir/pre/S.fst.txt \
     -s $tuneDir/pre/syms.txt \
-    -e $SYMSFILE \
+    -e $symsFile \
     -w $tuneDir/pre/weights.txt
 
   # Create S (Unweighted)
   fstcompile --arc_type=log $tuneDir/pre/S.fst.txt | fstarcsort > $tuneDir/pre/S.fst
+
+  seg=$tuneDir/pre/S.fst
+  syms=$tuneDir/pre/syms.txt
 
   # Now compose S with L_{ASR}
   for l in `ls -v $latDir/*.lat`
@@ -53,7 +55,7 @@ if [ $stage -le 0 ]; then
     done
 
     bname=${l##*/}
-    qsub -l 'arch=*64*' -cwd -j y -o $tuneDir/pre/log/$bname.log -v input=$l,output_dir=$pASRlat,sym=$syms mt_util/createSinglePhraseLattice.sh
+    qsub -l 'arch=*64*' -cwd -j y -o $tuneDir/pre/log/$bname.log -v input=$l,seg=$seg,output_dir=$tuneDir,sym=$syms mt_util/createSinglePhraseLatticeTuning.sh
   done
 
   # Wait for jobs to finish
@@ -65,10 +67,10 @@ if [ $stage -le 0 ]; then
 fi
 
 # Remove old files and copy template
-rm -rf $tuneDir/tune
-mkdir -p $tuneDir/tune
-cp $tuneTemplate/* $tuneDir/tune
+#rm -rf $tuneDir/tune
+#mkdir -p $tuneDir/tune
+#cp $tuneTemplate/* $tuneDir/tune
 
 # Tune
-cd $tuneDir/tune
-java -cp zmert.jar ZMERT -maxMem 5G ZMERT_cfg.txt
+#cd $tuneDir/tune
+#java -cp zmert.jar ZMERT -maxMem 5G ZMERT_cfg.txt

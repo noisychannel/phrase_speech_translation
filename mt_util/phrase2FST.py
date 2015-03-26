@@ -43,7 +43,7 @@ if opts.eSymFile is not None:
     lineDetails = line.strip().split()
     # Expected format : symbol id
     vocabulary[lineDetails[0]] = int(lineDetails[1])
-    symFile.write(line + "\n")
+    symFile.write(line.strip() + "\n")
 else:
   parser.print_help()
   sys.exit(1)

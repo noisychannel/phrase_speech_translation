@@ -5,18 +5,18 @@ w=${wmt}
 outputDir=${output_dir}
 syms=${sym}
 
-echo $l
+echo $p
+echo $w
 echo $outputDir
 echo $syms
 
 # FST prune behaves erratically with beam width 0
 # 100 shortest paths, hardcoded here
 
-bname=${l##*/}
-fstcompose $p $w \
-  | fstproject | fstprint \
-  | fstcompile | fstprune --nshortest=100 | fstrmepsilon \
-  | fstminimize | fstdeterminize > $outputDir/lat/$bname
+bname=${p##*/}
+fstcompose $p $w | fstprint \
+  | fstcompile | fstshortestpath --nshortest=100 | fstrmepsilon \
+  | fstminimize > $outputDir/latFinal/$bname
 
-  fstprintpaths $outputDir/lat/$bname $syms 2 \
+  fstprintpaths $syms $outputDir/latFinal/$bname 2 \
   >> $outputDir/nbest/$bname.nbest

@@ -329,3 +329,5 @@ echo "Done."
 # Tuning
 ###############
 
+nohup mt_util/tune.sh data/asr/dev/mergedLat/finalLat/ exp/tune data/mt/phrase_feats.tune.dev /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt log > tune_pre.log &
+mt_util/decoder.py -p exp/tune/lat/ -c config.dummy -f data/mt/phrase_feats.tune.dev -o exp/tune/ -s exp/tune/pre/syms.txt

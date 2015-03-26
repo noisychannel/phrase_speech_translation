@@ -4,7 +4,7 @@
 latDir=$1
 
 # Tuning directory
-tuneDir=$2
+tuneDir=$2/decoder
 
 # Location of feature file only get the source side
 featFile=$3
@@ -67,10 +67,7 @@ if [ $stage -le 0 ]; then
 fi
 
 # Remove old files and copy template
-#rm -rf $tuneDir/tune
-#mkdir -p $tuneDir/tune
-#cp $tuneTemplate/* $tuneDir/tune
 
 # Tune
-#cd $tuneDir/tune
-#java -cp zmert.jar ZMERT -maxMem 5G ZMERT_cfg.txt
+cd $2
+java -cp zmert.jar ZMERT -maxMem 5G ZMERT_cfg.txt

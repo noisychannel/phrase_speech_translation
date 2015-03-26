@@ -17,6 +17,7 @@ parser.add_argument("-c", "--config", dest="config", help="The decoder config fi
 parser.add_argument("-f", "-feats", dest="phraseFeats", help="The file containing the phrase features")
 parser.add_argument("-o", "--output-dir", dest="outputDir", help="The output directory")
 parser.add_argument("-s", "--syms", dest="symFile", help="The symbol table")
+parser.add_argument("-a", "--asr", dest="asrBest", help="The ASR one best output")
 opts = parser.parse_args()
 
 if opts.phraseLatDir is None or opts.config is None:
@@ -28,8 +29,7 @@ if opts.phraseLatDir is None or opts.config is None:
 
 phraseFeats = codecs.open(opts.phraseFeats, encoding="utf8")
 FSTFile = open(opts.outputDir + "/W_mt.fst.txt", "w+")
-symFile = codecs.open(opts.symFile, encoding="utf8")
-weightsFile = open(opts.weightsFile)
+weightsFile = open(opts.config)
 
 vocabulary = {}
 # Read external symbol file first (if available)
@@ -39,13 +39,15 @@ if opts.symFile is not None:
     lineDetails = line.strip().split()
     # Expected format : symbol id
     vocabulary[lineDetails[0]] = int(lineDetails[1])
-    symFile.write(line + "\n")
+  symFile.close()
 else:
   parser.print_help()
   sys.exit(1)
 
 # Write final state to the FST
-FSTFile.write("1\n")
+FSTFile.write("0\n")
+# Write the closure arc
+FSTFile.write("1 0 0 0\n")
 
 def getVocabID(word):
   """
@@ -57,7 +59,7 @@ def getVocabID(word):
 weights = []
 # Read weights : one per line
 for line in weightsFile:
-  weights.append(float(line.strip().strip()[1]))
+  weights.append(float(line.strip().split()[1]))
 
 sourcePhrases = {}
 # Get the source side phrases from the phrase table
@@ -69,9 +71,8 @@ for line in phraseFeats:
   feats = [float(x) for x in feats]
   cost = sum([float(feats[i]) * weights[i] for i in range(len(weights))])
   FSTFile.write("0 1 " + getVocabID("_".join(sourcePhrase.split())) + " " + getVocabID("_".join(sourcePhrase.split())) + " " + str(cost) + "\n")
-  sourcePhrases[sourcePhrase] = feats
+  sourcePhrases["_".join(sourcePhrase.split())] = feats
 
-symFile.close()
 FSTFile.close()
 phraseFeats.close()
 weightsFile.close()
@@ -81,28 +82,30 @@ weightsFile.close()
 # Project input for the n-best output
 # Project output to look up the phrase features
 
-os.system("mt_util/decodeSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt")
+os.system("mt_util/decodeSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile)
+asrBest = codecs.open(opts.asrBest, encoding="utf8")
 
-output = open(opts.output + "/nbest.result", "w+")
+output = codecs.open(opts.outputDir + "/nbest.result", "w+", encoding="utf8")
 for lineNo, line in enumerate(asrBest):
   line = line.strip()
   actualLineNo = lineNo + 1
-  if os.path.exists(opts.outputDir + "/nbest" + str(actualLineNo) + ".lat.nbest"):
-    f = open(opts.outputDir + "/nbest" + str(actualLineNo) + ".lat.nbest")
+  if os.path.exists(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest"):
+    f = codecs.open(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest", encoding="utf8")
     for hyp in f:
       hypComp = hyp.strip().split("|||")
-      inputHyp = hyp[0].strip()
-      phraseComp = hyp[1].strip().split()
+      inputHyp = hypComp[0].strip()
+      phraseComp = hypComp[1].strip().split()
       scores = [0.0 for _ in range(len(weights))]
       for phrase in phraseComp:
-        scores = [scores[i] + sourcePhrase[i] for i in range(len(scores))]
+        scores = [scores[i] + sourcePhrases[phrase.strip()][i] for i in range(len(scores))]
 
       if inputHyp.strip() != "":
         # Don't write to nbest if the lat is empty
-        output.write(str(lineNo) + " ||| " + inputHyp + " ||| " + " ".join(scores) + "\n")
+        output.write(str(actualLineNo) + " ||| " + inputHyp + " ||| " + " ".join([str(x) for x in scores]) + "\n")
       else:
-        output.write(str(lineNo) + " ||| " + line + " ||| " + " ".join([0.0 for _ in range(len(weights))]) + "\n")
+        output.write(str(actualLineNo) + " ||| " + line + " ||| " + " ".join(["0.0" for _ in range(len(weights))]) + "\n")
   else:
-    output.write(str(lineNo) + " ||| " + line + " ||| " + " ".join([0.0 for _ in range(len(weights))]) + "\n")
+    output.write(str(actualLineNo) + " ||| " + line + " ||| " + " ".join(["0.0" for _ in range(len(weights))]) + "\n")
 
 output.close()
+asrBest.close()

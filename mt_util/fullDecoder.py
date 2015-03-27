@@ -18,6 +18,9 @@ parser.add_argument("-f", "-feats", dest="phraseFeats", help="The file containin
 parser.add_argument("-o", "--output-dir", dest="outputDir", help="The output directory")
 parser.add_argument("-s", "--syms", dest="symFile", help="The symbol table")
 parser.add_argument("-a", "--asr", dest="asrBest", help="The ASR one best output")
+parser.add_argument("-n", "--nbest_source", dest="nBestSource", help="The nbest file for tuning")
+parser.add_argument("-u", "--nbest_count", dest="nBestCounts", help="The count of nbest entries")
+parser.add_argument("-t", "--nbest_target", dest="nBestTarget", help="The translated n-best file")
 opts = parser.parse_args()
 
 if opts.phraseLatDir is None or opts.config is None:
@@ -85,24 +88,37 @@ weightsFile.close()
 os.system("mt_util/decodeSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile)
 asrBest = codecs.open(opts.asrBest, encoding="utf8")
 
+# Read the n-best file and store
+nBestTrans = {}
+nBestCounts = open(opts.nBestCounts)
+nBestSource = codecs.open(opts.nBestSource, encoding="utf8")
+nBestTarget = codecs.open(opts.nBestTarget, encoding="utf8")
+for lineNo, count in enumerate(nBestCounts):
+  actualLineNo = lineNo + 1
+  nBestTrans[actualLineNo] = {}
+  for _ in range(int(count)):
+    nBestTrans[actualLineNo][nBestSource.readline().strip()] = nBestTarget.readline().strip()
+
 output = codecs.open(opts.outputDir + "/nbest.result", "w+", encoding="utf8")
 for lineNo, line in enumerate(asrBest):
+  actualLineNo = lineNo + 1
   line = line.strip()
+
   if line == "":
     line = "NO_TRANSLATION"
-  actualLineNo = lineNo + 1
+    lineTrans = "NO_TRANSLATION"
+  else:
+    lineTrans = nBestTrans[actualLineNo][line] if line in nBestTrans[actualLineNo] else "NO_TRANSLATION"
 
   if os.path.exists(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest"):
     if os.stat(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest").st_size == 0:
-      #output.write(str(actualLineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
-      output.write(str(lineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+      output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
       continue
 
     f = codecs.open(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest", encoding="utf8")
     for hyp in f:
       if hyp.strip() == "|||":
-        #output.write(str(actualLineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
-        output.write(str(lineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+        output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
         continue
 
       hypComp = hyp.strip().split("|||")
@@ -111,15 +127,18 @@ for lineNo, line in enumerate(asrBest):
       scores = [0.0 for _ in range(len(weights))]
       for phrase in phraseComp:
         scores = [scores[i] + sourcePhrases[phrase.strip()][i] for i in range(len(scores))]
+
       if not inputHyp or inputHyp is None:
         inputHyp = line
+        inputTrans = lineTrans
         scores = ["100.0" for _ in range(len(weights))]
-      #output.write(str(actualLineNo) + " ||| " + inputHyp + " ||| " + " ".join([str(x) for x in scores]) + "\n")
-      output.write(str(lineNo) + " ||| " + inputHyp + " ||| " + " ".join([str(x) for x in scores]) + "\n")
+      else:
+        inputTrans = nBestTrans[actualLineNo][inputHyp] if inputHyp in nBestTrans[actualLineNo] else "NO_TRANSLATION"
+
+      output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + " ".join([str(x) for x in scores]) + "\n")
 
   else:
-    #output.write(str(actualLineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
-    output.write(str(lineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+    output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
 
 output.close()
 asrBest.close()

@@ -15,7 +15,7 @@ tuneTemplate=$5
 
 # Maximum number of jobs to run on the queue
 numJobs=200
-stage=0
+stage=1
 
 if [ $# -ne 5 ]; then
   echo "USAGE : ./tune.sh [LAT-DIR] [TUNE-DIR] [FEAT-FILE] [SYMSFILE] [TUNE-TEMPLATE]"
@@ -70,4 +70,4 @@ fi
 
 # Tune
 cd $2
-java -cp zmert.jar ZMERT -maxMem 5G ZMERT_cfg.txt
+java -cp zmert.jar ZMERT -maxMem 5000 ZMERT_cfg.txt

@@ -15,7 +15,7 @@ echo $syms
 
 bname=${p##*/}
 fstcompose $p $w | fstprint \
-  | fstcompile | fstshortestpath --nshortest=100 | fstrmepsilon \
+  | fstcompile | fstshortestpath --nshortest=99 | fstrmepsilon \
   | fstminimize > $outputDir/latFinal/$bname
 
   fstprintpaths $syms $outputDir/latFinal/$bname 2 \

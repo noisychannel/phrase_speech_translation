@@ -51,6 +51,8 @@ else:
 FSTFile.write("0\n")
 # Write the closure arc
 FSTFile.write("1 0 0 0\n")
+# Write the OOV arc
+FSTFile.write("0 1 999999 999999 13.0\n")
 
 def getVocabID(word):
   """
@@ -75,6 +77,8 @@ for line in phraseFeats:
   cost = sum([float(feats[i]) * weights[i] for i in range(len(weights))])
   FSTFile.write("0 1 " + getVocabID("_".join(sourcePhrase.split())) + " " + getVocabID("_".join(sourcePhrase.split())) + " " + str(cost) + "\n")
   sourcePhrases["_".join(sourcePhrase.split())] = feats
+
+sourcePhrases["OOV"] = [1., 2.0, 0.0, 0.0]
 
 FSTFile.close()
 phraseFeats.close()

@@ -32,6 +32,7 @@ if opts.phraseFeats is None or opts.FSTFile is None or opts.symFile is None:
 phraseFeats = codecs.open(opts.phraseFeats, encoding="utf8")
 FSTFile = open(opts.FSTFile, "w+")
 symFile = codecs.open(opts.symFile, "w+", encoding="utf8")
+mtSymFile = codecs.open(opts.symFile + ".mt", "w+", encoding="utf8")
 # Only write output symbols to one file to make processing faster
 weightsFile = open(opts.weightsFile)
 
@@ -56,6 +57,9 @@ FSTFile.write("0\n")
 vocabID = len(vocabulary.keys())
 stateID = 1
 
+mtSyms = {'<eps>':0}
+mtSymFile.write("<eps> 0\n")
+
 def getVocabID(word, isPhrase):
   """
   Returns the vocabulary ID of the word argument
@@ -69,6 +73,12 @@ def getVocabID(word, isPhrase):
       vocabID = vocabID + 1
     else:
       return False
+
+  # The MT system uses this, record
+  if word not in mtSyms:
+    mtSyms[word] = vocabulary[word]
+    mtSymFile.write(word + " " + str(vocabulary[word]) + "\n")
+
   return str(vocabulary[word])
 
 weights = []
@@ -115,7 +125,12 @@ for phrase, cost in sourcePhrases.iteritems():
       stateID = nextState
       FSTFile.write(str(currentState) + " 0 0 " + getVocabID("_".join(phraseComp), True) + " " + str(cost) + "\n")
 
+# Write an OOV symbol
+FSTFile.write("0 0 999999 999999 0.0\n")
+symFile.write("OOV 999999\n")
+
 symFile.close()
+mtSymFile.close()
 eSymFile.close()
 FSTFile.close()
 phraseFeats.close()

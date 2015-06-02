@@ -78,7 +78,8 @@ then
           continue
         fi
         # Replace laugh, unk, oov, noise with eps
-        echo "$line" | awk '{if ($3 == 2035 || $3 == 2038 || $3 == 2039 || $3 == 2040) {$3 = 0; $4 = 0} print}' >> "$latdir/$rawLatDir/$fileName.lat"
+        #echo "$line" | awk '{if ($3 == 2035 || $3 == 2038 || $3 == 2039 || $3 == 2040) {$3 = 0; $4 = 0} print}' >> "$latdir/$rawLatDir/$fileName.lat"
+        echo "$line" >> "$latdir/$rawLatDir/$fileName.lat"
       done < $bname.ark.fst
       echo "Done isolating lattices"
     fi

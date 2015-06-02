@@ -41,7 +41,7 @@ def latticeConcatenate(lat1, lat2):
   Concatenates lattices, writes temporary results to tmpdir
   '''
   if lat1 == "":
-    os.system('rm ' + tmpdir + '/tmp.lat')
+    os.system('rm -f ' + tmpdir + '/tmp.lat')
     return lat2
   else:
     proc = subprocess.Popen(['fstconcat', lat1, lat2, (tmpdir + '/tmp.lat')])
@@ -84,7 +84,7 @@ for item in fileList:
         # Concatenate lattices
         mergedTranslation = latticeConcatenate(mergedTranslation, tmp)
 
-      print mergedTranslation
+      #print mergedTranslation
     if mergedTranslation != "":
 
       # Sanjeev's Recipe : Remove epsilons and topo sort

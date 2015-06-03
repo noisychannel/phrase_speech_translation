@@ -17,7 +17,7 @@ numJobs=200
 stage=0
 
 if [ $# -ne 4 ]; then
-  echo "USAGE : ./decodeSentences.sh [LAT-DIR] [OUT-DIR] [W-MT] [SYM-FILE]"
+  echo "USAGE : decoder_util/decodeMultipleSentences.sh [LAT-DIR] [OUT-DIR] [W-MT] [SYM-FILE]"
   exit 1
 fi
 
@@ -38,7 +38,7 @@ do
   #done
 
   bname=${p##*/}
-  qsub -l 'arch=*64*' -cwd -j y -o $outDir/decode_log/$bname.log -v input=$p,wmt=$wmt_close,output_dir=$outDir,sym=$syms mt_util/decodeSingleSentence.sh
+  qsub -l 'arch=*64*' -cwd -j y -o $outDir/decode_log/$bname.log -v input=$p,wmt=$wmt_close,output_dir=$outDir,sym=$syms mt_util/decoder_util/decodeSingleSentenceOneBest.sh
 done
 
 # Wait for jobs to finish

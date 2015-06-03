@@ -48,6 +48,9 @@ else:
 FSTFile.write("0\n")
 # Write the closure arc
 FSTFile.write("1 0 0 0\n")
+# Write the OOV arc
+#FSTFile.write("0 1 999999 999999 13.0\n")
+FSTFile.write("0 1 999999 999999 0.0\n")
 
 def getVocabID(word):
   """
@@ -73,6 +76,8 @@ for line in phraseFeats:
   FSTFile.write("0 1 " + getVocabID("_".join(sourcePhrase.split())) + " " + getVocabID("_".join(sourcePhrase.split())) + " " + str(cost) + "\n")
   sourcePhrases["_".join(sourcePhrase.split())] = feats
 
+sourcePhrases["OOV"] = [1., 2.0, 0.0, 0.0]
+
 FSTFile.close()
 phraseFeats.close()
 weightsFile.close()
@@ -82,7 +87,8 @@ weightsFile.close()
 # Project input for the n-best output
 # Project output to look up the phrase features
 
-os.system("mt_util/decodeSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile)
+os.system("mt_util/decoder_util/decodeMultipleSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile)
+print opts.asrBest
 asrBest = codecs.open(opts.asrBest, encoding="utf8")
 
 output = codecs.open(opts.outputDir + "/nbest.result", "w+", encoding="utf8")
@@ -94,14 +100,12 @@ for lineNo, line in enumerate(asrBest):
 
   if os.path.exists(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest"):
     if os.stat(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest").st_size == 0:
-      #output.write(str(actualLineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
       output.write(str(lineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
       continue
 
     f = codecs.open(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest", encoding="utf8")
     for hyp in f:
       if hyp.strip() == "|||":
-        #output.write(str(actualLineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
         output.write(str(lineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
         continue
 
@@ -114,11 +118,9 @@ for lineNo, line in enumerate(asrBest):
       if not inputHyp or inputHyp is None:
         inputHyp = line
         scores = ["100.0" for _ in range(len(weights))]
-      #output.write(str(actualLineNo) + " ||| " + inputHyp + " ||| " + " ".join([str(x) for x in scores]) + "\n")
       output.write(str(lineNo) + " ||| " + inputHyp + " ||| " + " ".join([str(x) for x in scores]) + "\n")
 
   else:
-    #output.write(str(actualLineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
     output.write(str(lineNo) + " ||| " + line + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
 
 output.close()

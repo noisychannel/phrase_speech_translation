@@ -38,7 +38,7 @@ do
   #done
 
   bname=${p##*/}
-  qsub -l 'arch=*64*' -cwd -j y -o $outDir/decode_log/$bname.log -v input=$p,wmt=$wmt_close,output_dir=$outDir,sym=$syms mt_util/decoder_util/decodeSingleSentenceOneBest.sh
+  qsub -l 'arch=*64*' -cwd -j y -o $outDir/decode_log/$bname.log -v input=$p,wmt=$wmt_close,output_dir=$outDir,sym=$syms mt_util/decoder_util/decodeSingleSentenceNBest.sh
 done
 
 # Wait for jobs to finish

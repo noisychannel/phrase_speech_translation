@@ -15,7 +15,7 @@ tuneTemplate=$5
 
 # Maximum number of jobs to run on the queue
 numJobs=200
-stage=1
+stage=0
 
 if [ $# -ne 5 ]; then
   echo "USAGE : ./tune.sh [LAT-DIR] [TUNE-DIR] [FEAT-FILE] [SYMSFILE] [TUNE-TEMPLATE]"
@@ -43,6 +43,10 @@ if [ $stage -le 0 ]; then
   # Create S (Unweighted)
   fstcompile --arc_type=log $tuneDir/pre/S.fst.txt | fstarcsort > $tuneDir/pre/S.fst
 
+  # Create OOV file
+  comm -23 <(sort $symsFile) <(sort $tuneDir/pre/syms.txt.mt)  | awk -v a=999999 '{print $2 " " a}' > $tuneDir/pre/oov.txt
+  oov=$tuneDir/pre/oov.txt
+
   seg=$tuneDir/pre/S.fst
   syms=$tuneDir/pre/syms.txt
 
@@ -50,16 +54,16 @@ if [ $stage -le 0 ]; then
   for l in `ls -v $latDir/*.lat`
   do
     # Check for job limit
-    while [ `qstat | grep -c createSing` -ge $numJobs ]; do
+    while [ `qstat | grep -c createP_AS` -ge $numJobs ]; do
       sleep 5
     done
 
     bname=${l##*/}
-    qsub -l 'arch=*64*' -cwd -j y -o $tuneDir/pre/log/$bname.log -v input=$l,seg=$seg,output_dir=$tuneDir,sym=$syms mt_util/createSinglePhraseLatticeTuning.sh
+    qsub -l 'arch=*64*' -cwd -j y -o $tuneDir/pre/log/$bname.log -v input=$l,seg=$seg,output_dir=$tuneDir,sym=$syms,oov=$oov mt_util/tune_util/createP_ASR.sh
   done
 
   # Wait for jobs to finish
-  while [ `qstat | grep -c createSing` -ne 0 ]; do
+  while [ `qstat | grep -c createP_AS` -ne 0 ]; do
     sleep 5
   done
 

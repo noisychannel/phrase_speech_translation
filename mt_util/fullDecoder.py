@@ -51,8 +51,6 @@ else:
 FSTFile.write("0\n")
 # Write the closure arc
 FSTFile.write("1 0 0 0\n")
-# Write the OOV arc
-FSTFile.write("0 1 999999 999999 13.0\n")
 
 def getVocabID(word):
   """
@@ -66,6 +64,11 @@ weights = []
 for line in weightsFile:
   weights.append(float(line.strip().split()[1]))
 
+# The last weight is the OOV weight
+OOVWeight = weights[-1]
+# Write the OOV arc
+FSTFile.write("0 1 999999 999999 " + str(OOVWeight) + "\n")
+
 sourcePhrases = {}
 # Get the source side phrases from the phrase table
 for line in phraseFeats:
@@ -73,12 +76,16 @@ for line in phraseFeats:
   phraseInfo = line.split("\t")
   sourcePhrase = phraseInfo[0].strip()
   feats = phraseInfo[1:]
+  # Add a non-OOV feature
+  feats.append(0.0)
   feats = [float(x) for x in feats]
   cost = sum([float(feats[i]) * weights[i] for i in range(len(weights))])
   FSTFile.write("0 1 " + getVocabID("_".join(sourcePhrase.split())) + " " + getVocabID("_".join(sourcePhrase.split())) + " " + str(cost) + "\n")
   sourcePhrases["_".join(sourcePhrase.split())] = feats
 
-sourcePhrases["OOV"] = [1., 2.0, 0.0, 0.0]
+# The second feature approximates the unigram feature
+# for an instance that only occurs once
+sourcePhrases["OOV"] = [1., 14.00, 0.0, 0.0, 1.0]
 
 FSTFile.close()
 phraseFeats.close()
@@ -89,7 +96,7 @@ weightsFile.close()
 # Project input for the n-best output
 # Project output to look up the phrase features
 
-os.system("mt_util/decodeSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile)
+os.system("mt_util/decoder_util/decodeMultipleSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile)
 asrBest = codecs.open(opts.asrBest, encoding="utf8")
 
 # Read the n-best file and store

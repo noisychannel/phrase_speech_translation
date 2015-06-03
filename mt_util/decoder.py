@@ -48,9 +48,6 @@ else:
 FSTFile.write("0\n")
 # Write the closure arc
 FSTFile.write("1 0 0 0\n")
-# Write the OOV arc
-#FSTFile.write("0 1 999999 999999 13.0\n")
-FSTFile.write("0 1 999999 999999 0.0\n")
 
 def getVocabID(word):
   """
@@ -64,6 +61,11 @@ weights = []
 for line in weightsFile:
   weights.append(float(line.strip().split()[1]))
 
+# The last weight is the OOV weight
+OOVWeight = weights[-1]
+# Write the OOV arc
+FSTFile.write("0 1 999999 999999 " + str(OOVWeight) + "\n")
+
 sourcePhrases = {}
 # Get the source side phrases from the phrase table
 for line in phraseFeats:
@@ -72,11 +74,13 @@ for line in phraseFeats:
   sourcePhrase = phraseInfo[0].strip()
   feats = phraseInfo[1:]
   feats = [float(x) for x in feats]
+  # Add a non-OOV feature
+  feats.append(0.0)
   cost = sum([float(feats[i]) * weights[i] for i in range(len(weights))])
   FSTFile.write("0 1 " + getVocabID("_".join(sourcePhrase.split())) + " " + getVocabID("_".join(sourcePhrase.split())) + " " + str(cost) + "\n")
   sourcePhrases["_".join(sourcePhrase.split())] = feats
 
-sourcePhrases["OOV"] = [1., 2.0, 0.0, 0.0]
+sourcePhrases["OOV"] = [1., 2.0, 0.0, 0.0, 1.0]
 
 FSTFile.close()
 phraseFeats.close()

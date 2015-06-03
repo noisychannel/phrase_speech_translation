@@ -6,3 +6,5 @@ exp2
 *.out
 test
 *.exp.sh
+*.o
+*.os

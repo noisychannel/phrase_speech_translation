@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 22
+/svn/!svn/ver/16/trunk
+END
+fstprintpaths-main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/8/trunk/fstprintpaths-main.cpp
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 29
+/svn/!svn/ver/16/trunk/README
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/svn/!svn/ver/16/trunk/Makefile
+END
+fstprintpaths.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/11/trunk/fstprintpaths.hpp
+END
+utils.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/svn/!svn/ver/7/trunk/utils.cpp
+END
+utils.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/svn/!svn/ver/7/trunk/utils.hpp
+END
+fstprintpaths.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/6/trunk/fstprintpaths.cpp
+END

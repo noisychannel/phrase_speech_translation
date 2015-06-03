@@ -66,9 +66,13 @@ for item in fileList:
         if len(mergedTranslation) == 0:
           mergedTranslation = tmp
         else:
-          mergedTranslation = [x + " " + y for x in mergedTranslation for y in tmp]
-      # Prune to get only the top 500 hyps
-      mergedTranslation = mergedTranslation[:500]
+          tmpResults = []
+          for i, m_l in enumerate(mergedTranslation):
+            for j, t_l in enumerate(tmp):
+              tmpResults.append((i+1)*(j+1), m_l + " " + t_l)
+          # Prune to get only the top 500 hyps
+          mergedTranslation = [y[1] for y in sorted(tmpResults, key=lambda x:x[0])][:500]
+
     # Add an empty entry if no hyps were found
     if len(mergedTranslation) == 0:
       mergedTranslation.append("")

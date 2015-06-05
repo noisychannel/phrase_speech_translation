@@ -13,10 +13,11 @@ echo $syms
 # FST prune behaves erratically with beam width 0
 # 100 shortest paths, hardcoded here
 
+# Concats final result with an empty FST to remove multiple final states
+
 bname=${p##*/}
 fstcompose $p $w | fstprint \
   | fstcompile | fstshortestpath --nshortest=99 | fstrmepsilon \
-  | fstminimize > $outputDir/latFinal/$bname
+  | fstminimize | fstconcat - $outputDir/dummy.fst > $outputDir/latFinal/$bname
 
-  fstprintpaths $syms $outputDir/latFinal/$bname 2 \
-  >> $outputDir/nbest/$bname.nbest
+fstprintpaths $syms $outputDir/latFinal/$bname 2 >> $outputDir/nbest/$bname.nbest

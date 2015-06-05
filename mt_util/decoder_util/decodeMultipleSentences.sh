@@ -29,6 +29,9 @@ mkdir -p $outDir/latFinal
 
 wmt_close=$outDir/W_close.fst
 
+# Create a dummy FST that can be used for concatenation to remove multiple final states
+echo 0 | fstcompile > $outDir/dummy.fst
+
 # Now compose S with L_{ASR}
 for p in `ls -v $latDir/*.lat`
 do
@@ -45,5 +48,7 @@ done
 while [ `qstat | grep -c decodeSing` -ne 0 ]; do
   sleep 5
 done
+
+rm $outDir/dummy.fst
 
 echo "Done decoding"

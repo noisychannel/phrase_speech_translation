@@ -76,6 +76,7 @@ assert len(weights) == 6
 # 0-3 : Phrase features
 # 4 : OOV feature
 # The last weight is the ASR weight which is fixed to 1.0
+asrWeight = weights[-1]
 
 # Don't penalize the ASR system for producing known OOVs
 for sym in knownOOVs:
@@ -113,7 +114,7 @@ weightsFile.close()
 # Project input for the n-best output
 # Project output to look up the phrase features
 
-os.system("mt_util/decoder_util/decodeMultipleSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile)
+os.system("mt_util/decoder_util/decodeMultipleSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile + " " + str(asrWeight))
 asrBest = codecs.open(opts.asrBest, encoding="utf8")
 
 # Read the n-best file and store

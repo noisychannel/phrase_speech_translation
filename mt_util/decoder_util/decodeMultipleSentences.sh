@@ -12,12 +12,15 @@ wmt=$3
 # Syms
 syms=$4
 
+# ASR Scale
+asr_scale=$5
+
 # Maximum number of jobs to run on the queue
 numJobs=200
 stage=0
 
-if [ $# -ne 4 ]; then
-  echo "USAGE : decoder_util/decodeMultipleSentences.sh [LAT-DIR] [OUT-DIR] [W-MT] [SYM-FILE]"
+if [ $# -ne 5 ]; then
+  echo "USAGE : decoder_util/decodeMultipleSentences.sh [LAT-DIR] [OUT-DIR] [W-MT] [SYM-FILE] [ASR-SCALE]"
   exit 1
 fi
 
@@ -41,7 +44,7 @@ do
   #done
 
   bname=${p##*/}
-  qsub -l 'arch=*64*' -cwd -j y -o $outDir/decode_log/$bname.log -v input=$p,wmt=$wmt_close,output_dir=$outDir,sym=$syms mt_util/decoder_util/decodeSingleSentenceNBest.sh
+  qsub -l 'arch=*64*' -cwd -j y -o $outDir/decode_log/$bname.log -v input=$p,wmt=$wmt_close,output_dir=$outDir,sym=$syms,a_scale=$asr_scale mt_util/decoder_util/decodeSingleSentenceNBest.sh
 done
 
 # Wait for jobs to finish

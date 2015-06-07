@@ -71,15 +71,14 @@ weights = []
 for line in weightsFile:
   weights.append(float(line.strip().split()[1]))
 
-assert len(weights) == 5
+assert len(weights) == 6
+# 0-3 : Phrase features
+# 4 : OOV feature
+# The last weight is the ASR weight which is fixed to 1.0
 
-# The last weight is the OOV weight
-OOVWeight = weights[-1]
-# Write the OOV arcs
 # Don't penalize the ASR system for producing known OOVs
 for sym in knownOOVs:
-    FSTFile.write("0 1 " + sym + " " + sym + " 0\n")
-FSTFile.write("0 1 999999 999999 " + str(OOVWeight) + "\n")
+    FSTFile.write("0 1 " + sym + " 0 0\n")
 
 sourcePhrases = {}
 # Get the source side phrases from the phrase table
@@ -88,16 +87,21 @@ for line in phraseFeats:
   phraseInfo = line.split("\t")
   sourcePhrase = phraseInfo[0].strip()
   feats = phraseInfo[1:]
+  feats = [float(x) for x in feats]
   # Add a non-OOV feature
   feats.append(0.0)
-  feats = [float(x) for x in feats]
+  # Add a non-tunable dummy ASR feature
+  feats.append(0.0)
+  assert len(feats) == len(weights)
   cost = sum([float(feats[i]) * weights[i] for i in range(len(weights))])
   FSTFile.write("0 1 " + getVocabID("_".join(sourcePhrase.split())) + " " + getVocabID("_".join(sourcePhrase.split())) + " " + str(cost) + "\n")
   sourcePhrases["_".join(sourcePhrase.split())] = feats
 
 # The second feature approximates the unigram feature
 # for an instance that only occurs once
-sourcePhrases["OOV"] = [1., 14.00, 0.0, 0.0, 1.0]
+sourcePhrases["OOV"] = [1., 14.00, 0.0, 0.0, 1.0, 0.0]
+# Write the OOV arcs
+FSTFile.write("0 1 999999 999999 " + str(sum([float(sourcePhrases["OOV"][i]) * weights[i] for i in range(len(weights))])) + "\n")
 
 FSTFile.close()
 phraseFeats.close()

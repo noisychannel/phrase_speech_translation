@@ -18,6 +18,7 @@ parser.add_argument("-f", "-feats", dest="phraseFeats", help="The file containin
 parser.add_argument("-o", "--output-dir", dest="outputDir", help="The output directory")
 parser.add_argument("-s", "--syms", dest="symFile", help="The symbol table")
 parser.add_argument("-a", "--asr", dest="asrBest", help="The ASR one best output")
+parser.add_argument("-k", "--known_oovs", dest="knownOOVs", help="A list of known-OOV symbols")
 opts = parser.parse_args()
 
 if opts.phraseLatDir is None or opts.config is None:
@@ -44,6 +45,12 @@ else:
   parser.print_help()
   sys.exit(1)
 
+# Read and store known-OOVs if they exist
+knownOOVs = []
+if opts.knownOOVs is not None:
+    with open(opts.knownOOVs) as f:
+        knownOOVs.append(f.strip())
+
 # Write final state to the FST
 FSTFile.write("0\n")
 # Write the closure arc
@@ -61,10 +68,14 @@ weights = []
 for line in weightsFile:
   weights.append(float(line.strip().split()[1]))
 
-# The last weight is the OOV weight
-OOVWeight = weights[-1]
-# Write the OOV arc
-FSTFile.write("0 1 999999 999999 " + str(OOVWeight) + "\n")
+assert len(weights) == 6
+# 0-3 : Phrase features
+# 4 : OOV feature
+# The last weight is the ASR weight which is fixed to 1.0
+
+# Don't penalize the ASR system for producing known OOVs
+for sym in knownOOVs:
+    FSTFile.write("0 1 " + sym + " 0 0\n")
 
 sourcePhrases = {}
 # Get the source side phrases from the phrase table
@@ -76,11 +87,16 @@ for line in phraseFeats:
   feats = [float(x) for x in feats]
   # Add a non-OOV feature
   feats.append(0.0)
+  # Add a non-tunable dummy ASR feature
+  feats.append(0.0)
+  assert len(feats) == len(weights)
   cost = sum([float(feats[i]) * weights[i] for i in range(len(weights))])
   FSTFile.write("0 1 " + getVocabID("_".join(sourcePhrase.split())) + " " + getVocabID("_".join(sourcePhrase.split())) + " " + str(cost) + "\n")
   sourcePhrases["_".join(sourcePhrase.split())] = feats
 
-sourcePhrases["OOV"] = [1., 2.0, 0.0, 0.0, 1.0]
+sourcePhrases["OOV"] = [1., 14.0, 0.0, 0.0, 1.0, 0.0]
+# Write the OOV arcs
+FSTFile.write("0 1 999999 999999 " + str(sum([float(sourcePhrases["OOV"][i]) * weights[i] for i in range(len(weights))])) + "\n")
 
 FSTFile.close()
 phraseFeats.close()

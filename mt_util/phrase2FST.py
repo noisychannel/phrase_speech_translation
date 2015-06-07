@@ -13,7 +13,6 @@ Author : Gaurav Kumar (Johns Hopkins University)
 """
 
 import codecs
-import collections
 import argparse
 import sys
 
@@ -23,11 +22,18 @@ parser.add_argument("-f", "--fst", dest="FSTFile", help="The location to write o
 parser.add_argument("-s", "--syms", dest="symFile", help="The location to write out the output symbols")
 parser.add_argument("-e", "--esyms", dest="eSymFile", help="An existing symbol table to start from ")
 parser.add_argument("-w", "--weights", dest="weightsFile", help="A weights file to combine the features")
+parser.add_argument("-k", "--known_oovs", dest="knownOOVs", help="A list of known-OOV symbols")
 opts = parser.parse_args()
 
-if opts.phraseFeats is None or opts.FSTFile is None or opts.symFile is None:
+if opts.phraseFeats is None or opts.FSTFile is None or opts.symFile is None or opts.knownOOVs is None:
   parser.print_help()
   sys.exit(1)
+
+# Read and store known-OOVs if they exist
+knownOOVs = []
+with open(opts.knownOOVs) as f:
+    for l in f:
+        knownOOVs.append(l.strip())
 
 phraseFeats = codecs.open(opts.phraseFeats, encoding="utf8")
 FSTFile = open(opts.FSTFile, "w+")
@@ -128,6 +134,9 @@ for phrase, cost in sourcePhrases.iteritems():
 # Write an OOV symbol
 FSTFile.write("0 0 999999 999999 0.0\n")
 symFile.write("OOV 999999\n")
+# Write known OOVs
+for sym in knownOOVs:
+    FSTFile.write("0 0 " + sym + " " + sym + " 0.0\n")
 
 symFile.close()
 mtSymFile.close()

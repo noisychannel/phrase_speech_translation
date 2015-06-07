@@ -152,12 +152,13 @@ for lineNo, line in enumerate(asrBest):
       hypComp = hyp.strip().split("|||")
       inputHyp = hypComp[0].strip()
       phraseComp = hypComp[1].strip().split()
-      asrScore = float(hypComp[2].strip())
+      latScore = float(hypComp[2].strip())
       scores = [0.0 for _ in range(len(weights))]
       for phrase in phraseComp:
         scores = [scores[i] + sourcePhrases[phrase.strip()][i] for i in range(len(scores))]
       # Replace the final score with the actual ASR score
-      scores[-1] = asrScore
+      asrScore = latScore - sum([scores[i] * weights[i] for i in range(len(weights))])
+      scores[-1] = asrScore / weights[-1]
 
       if not inputHyp or inputHyp is None:
         inputHyp = line

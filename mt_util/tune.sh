@@ -31,6 +31,8 @@ if [ $stage -le 0 ]; then
 
   # Create a dummy weights file
   printf "0.0\n0.0\n0.0\n0.0" > $tuneDir/pre/weights.txt
+  # Known OOVs from the ASR system (special symbols should go to a separate file)
+  printf "2038\n2039\n2040\n2035" > $tuneDir/pre/known_oov.txt
 
   # The dev set is hardcoded for tuning here
   time mt_util/phrase2FST.py \
@@ -38,14 +40,13 @@ if [ $stage -le 0 ]; then
     -f $tuneDir/pre/S.fst.txt \
     -s $tuneDir/pre/syms.txt \
     -e $symsFile \
-    -w $tuneDir/pre/weights.txt
+    -w $tuneDir/pre/weights.txt \
+    -k $tuneDir/pre/known_oov.txt
 
   # Create S (Unweighted)
   fstcompile --arc_type=log $tuneDir/pre/S.fst.txt | fstarcsort > $tuneDir/pre/S.fst
 
   # Create OOV file
-  # Known OOVs from the ASR system (special symbols should go to a separate file)
-  printf "2038\n2039\n2040\n2035" > $tuneDir/pre/known_oov.txt
   comm -23 <(sort $symsFile) <(sort $tuneDir/pre/syms.txt.mt)  \
     | awk -v a=999999 '{if ($2 != 2038 && $2 != 2039 && $2 != 2040 && $2 != 2035 ) {print $2 " " a}}' > $tuneDir/pre/oov.txt
   oov=$tuneDir/pre/oov.txt

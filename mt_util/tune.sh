@@ -47,7 +47,7 @@ if [ $stage -le 0 ]; then
   # Known OOVs from the ASR system (special symbols should go to a separate file)
   printf "2038\n2039\n2040\n2035" > $tuneDir/pre/known_oov.txt
   comm -23 <(sort $symsFile) <(sort $tuneDir/pre/syms.txt.mt)  \
-    | awk -v a=999999 '{if ($2 != 2038 || $2 != 2039 || $2 != 2040 || $2 != 2035 ) {print $2 " " a}}' > $tuneDir/pre/oov.txt
+    | awk -v a=999999 '{if ($2 != 2038 && $2 != 2039 && $2 != 2040 && $2 != 2035 ) {print $2 " " a}}' > $tuneDir/pre/oov.txt
   oov=$tuneDir/pre/oov.txt
 
   seg=$tuneDir/pre/S.fst

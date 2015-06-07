@@ -39,7 +39,8 @@ weightsFile = open(opts.config)
 knownOOVs = []
 if opts.knownOOVs is not None:
     with open(opts.knownOOVs) as f:
-        knownOOVs.append(f.strip())
+        for l in f:
+            knownOOVs.append(l.strip())
 
 vocabulary = {}
 # Read external symbol file first (if available)
@@ -151,9 +152,12 @@ for lineNo, line in enumerate(asrBest):
       hypComp = hyp.strip().split("|||")
       inputHyp = hypComp[0].strip()
       phraseComp = hypComp[1].strip().split()
+      asrScore = float(hypComp[2].strip())
       scores = [0.0 for _ in range(len(weights))]
       for phrase in phraseComp:
         scores = [scores[i] + sourcePhrases[phrase.strip()][i] for i in range(len(scores))]
+      # Replace the final score with the actual ASR score
+      scores[-1] = asrScore
 
       if not inputHyp or inputHyp is None:
         inputHyp = line

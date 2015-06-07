@@ -61,7 +61,7 @@ void fstprintpaths::printAllStringsHelper(StdVectorFst& fst, SymbolTable& st, in
                   cout << outputString;
                   break;
                 default:
-                  cout << inputString << " ||| " << outputString;
+                  cout << inputString << " ||| " << outputString << " ||| " << cost;
                   break;
             }
             cout << endl;

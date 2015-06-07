@@ -21,6 +21,7 @@ parser.add_argument("-a", "--asr", dest="asrBest", help="The ASR one best output
 parser.add_argument("-n", "--nbest_source", dest="nBestSource", help="The nbest file for tuning")
 parser.add_argument("-u", "--nbest_count", dest="nBestCounts", help="The count of nbest entries")
 parser.add_argument("-t", "--nbest_target", dest="nBestTarget", help="The translated n-best file")
+parser.add_argument("-k", "--known_oovs", dest="knownOOVs", help="A list of known-OOV symbols")
 opts = parser.parse_args()
 
 if opts.phraseLatDir is None or opts.config is None:
@@ -33,6 +34,12 @@ if opts.phraseLatDir is None or opts.config is None:
 phraseFeats = codecs.open(opts.phraseFeats, encoding="utf8")
 FSTFile = open(opts.outputDir + "/W_mt.fst.txt", "w+")
 weightsFile = open(opts.config)
+
+# Read and store known-OOVs if they exist
+knownOOVs = []
+if opts.knownOOVs is not None:
+    with open(opts.knownOOVs) as f:
+        knownOOVs.append(f.strip())
 
 vocabulary = {}
 # Read external symbol file first (if available)
@@ -64,9 +71,14 @@ weights = []
 for line in weightsFile:
   weights.append(float(line.strip().split()[1]))
 
+assert len(weights) == 5
+
 # The last weight is the OOV weight
 OOVWeight = weights[-1]
-# Write the OOV arc
+# Write the OOV arcs
+# Don't penalize the ASR system for producing known OOVs
+for sym in knownOOVs:
+    FSTFile.write("0 1 " + sym + " " + sym + " 0\n")
 FSTFile.write("0 1 999999 999999 " + str(OOVWeight) + "\n")
 
 sourcePhrases = {}

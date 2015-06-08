@@ -1,0 +1,50 @@
+# Outline for running an experiment
+
+
+# After running experiments decode using 
+# Decode the dev2 and the test sets
+# STEP 1 : First generate the pre-requisites for decoding
+nohup mt_util/tune.sh data/asr/dev2/mergedLat/finalLat/ \
+  exp/new-mert.4.decode.dev2 data/mt/phrase_feats.tune.dev2 \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  log > decode.dev2.log & 
+nohup mt_util/tune.sh \
+  data/asr/test/mergedLat/finalLat/ exp/new-mert.4.decode.test \
+  data/mt/phrase_feats.tune.test \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  log > decode.test.log &
+
+# STEP 2: Decode using the partial decoder
+#!/usr/bin/env bash
+
+expDir=exp/new-mert.4.decode.dev2
+tunedExpDir=exp/new-mert.4
+
+cd /export/a04/gkumar/code/custom/phrase_speech_translation
+
+mt_util/decoder.py \
+  -p $expDir/decoder/lat \
+  -c $tunedExpDir/SDecoder_cfg.txt.ZMERT.final \
+  -f data/mt/phrase_feats.tune.dev2 \
+  -o $expDir/decoder/ \
+  -s $expDir/decoder/pre/syms.txt \
+  -a data/asr/dev2/1best/asr.1best.clean \
+  -k $expDir/decoder/pre/known_oov.txt > $expDir/decoder/decoder.out
+
+#asr_util/cleanASROutput.sh $expDir/decoder/nbest.result
+cd $expDir/decoder
+cp nbest.result ../nbest.out
+
+# Create a timstamped directory and put the contents in there
+arkDir=$(date -d "today" +"%Y%m%d%H%M")
+mkdir $arkDir
+
+mv decode_log $arkDir/
+mv latFinal $arkDir/
+mv nbest $arkDir/
+mv nbest.result $arkDir/
+mv W_close.fst $arkDir/
+mv W_mt.fst.txt $arkDir/
+mv decoder.out $arkDir/
+
+cd ..

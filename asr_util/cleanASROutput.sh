@@ -7,4 +7,4 @@ cat $1 \
   | sed 's:<unk>::g' \
   | sed 's:  : :g' \
   | sed 's: *$::g'\
-  | sed 's:^ *::g' > $1.clean
+  | sed 's:^ *::g'

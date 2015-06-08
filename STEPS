@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Manual steps corresponding to the Makefile
+
 # Get the lattices from Kaldi for each dataset that has been decoded
 # dev, dev2 and test : Fisher
 # Acoustic scale set to 1/W, where W led to the best WER

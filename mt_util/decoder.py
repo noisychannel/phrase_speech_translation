@@ -49,7 +49,8 @@ else:
 knownOOVs = []
 if opts.knownOOVs is not None:
     with open(opts.knownOOVs) as f:
-        knownOOVs.append(f.strip())
+        for l in f:
+            knownOOVs.append(l.strip())
 
 # Write final state to the FST
 FSTFile.write("0\n")
@@ -72,6 +73,7 @@ assert len(weights) == 6
 # 0-3 : Phrase features
 # 4 : OOV feature
 # The last weight is the ASR weight which is fixed to 1.0
+asrWeight = weights[-1]
 
 # Don't penalize the ASR system for producing known OOVs
 for sym in knownOOVs:
@@ -107,7 +109,7 @@ weightsFile.close()
 # Project input for the n-best output
 # Project output to look up the phrase features
 
-os.system("mt_util/decoder_util/decodeMultipleSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile)
+os.system("mt_util/decoder_util/decodeMultipleSentences.sh " + opts.phraseLatDir + " " + opts.outputDir + " " + opts.outputDir + "/W_mt.fst.txt " + opts.symFile + " " + str(asrWeight))
 print opts.asrBest
 asrBest = codecs.open(opts.asrBest, encoding="utf8")
 
@@ -132,9 +134,13 @@ for lineNo, line in enumerate(asrBest):
       hypComp = hyp.strip().split("|||")
       inputHyp = hypComp[0].strip()
       phraseComp = hypComp[1].strip().split()
+      latScore = float(hypComp[2].strip())
       scores = [0.0 for _ in range(len(weights))]
       for phrase in phraseComp:
         scores = [scores[i] + sourcePhrases[phrase.strip()][i] for i in range(len(scores))]
+      asrScore = latScore - sum([scores[i] * weights[i] for i in range(len(weights))])
+      scores[-1] = asrScore / weights[-1]
+
       if not inputHyp or inputHyp is None:
         inputHyp = line
         scores = ["100.0" for _ in range(len(weights))]

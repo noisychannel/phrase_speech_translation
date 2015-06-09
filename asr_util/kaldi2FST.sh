@@ -56,10 +56,10 @@ then
       $KALDI_ROOT/src/latbin/lattice-copy ark:$bname.bin ark,t:- > "$bname.raw"
 
       # Prune lattices
-      $KALDI_ROOT/src/latbin/lattice-prune --acoustic-scale=$acoustic_scale --beam=$prunebeam ark:"$bname.raw" ark:"$bname.pruned"
+      #$KALDI_ROOT/src/latbin/lattice-prune --acoustic-scale=$acoustic_scale --beam=$prunebeam ark:"$bname.raw" ark:"$bname.pruned"
 
       # Convert to an openfst compatible format
-      $KALDI_ROOT/src/latbin/lattice-to-fst --lm-scale=1.0 --acoustic-scale=$acoustic_scale ark:$bname.pruned ark,t:$bname.ark.fst	
+      $KALDI_ROOT/src/latbin/lattice-to-fst --lm-scale=1.0 --acoustic-scale=$acoustic_scale ark:$bname.raw ark,t:$bname.ark.fst	
 
     fi
 

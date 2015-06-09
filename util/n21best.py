@@ -1,35 +1,32 @@
 #!/usr/bin/env python
 
 import sys
-import argparse
 
-parser = argparse.ArgumentParser("Extracts 1-best hyps from a weighted n-best file")
-parser.add_argument("-n", "--nbest", dest="nbestFile", help="The n-best file to extract 1-best hyps from")
-parser.add_argument("-w", "--weights", dest="weightsFile", help="The weights for the features in the n-best file")
-opts = parser.parse_args()
+if len(sys.argv) < 3:
+    print "USAGE : n21best.py [WEIGHTS] [NBEST-1] [NBEST-2] .."
 
-if opts.nbestFile is None or opts.weightsFile is None:
-    parser.print_help()
-    sys.exit(1)
-
-nbestFile = open(opts.nbestFile)
-weightsFile = open(opts.weightsFile)
+weightsFile = open(sys.argv[1])
 
 weights = []
 for line in weightsFile:
     line = line.strip().split()
     weights.append(float(line[1]))
 
-curL = -1
-hyps = []
-for line in nbestFile:
-    line = line.split("|||")
-    ln = int(line[0].strip())
-    if ln != curL and ln != 0:
-        print sorted(hyps, key=lambda x: x[1])[0][0]
-        hyps = []
-        curL = ln
-    feats = line[2].strip().split()
-    hyps.append((line[1].strip(), sum([float(feats[i]) * weights[i] for i in range(len(weights))])))
+hyps = {}
 
-print sorted(hyps, key=lambda x:x[1])[0][0]
+def process_hyps(nbest, weights):
+    global hyps
+    for line in nbest:
+        line = line.split("|||")
+        ln = int(line[0].strip())
+        feats = line[2].strip().split()
+        if ln not in hyps:
+            hyps[ln] = []
+        hyps[ln].append((line[1].strip(), sum([float(feats[i]) * weights[i] for i in range(len(weights))])))
+
+for i in range(2, len(sys.argv)):
+    nbest = open(sys.argv[i])
+    process_hyps(nbest, weights)
+
+for lineNo in sorted(hyps.keys()):
+    print sorted(hyps[lineNo], key=lambda x:x[1], reverse=True)[0][0]

@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 
-expDir=exp/new-mert.4.decode.test
-tunedExpDir=exp/new-mert.4
-
 cd /export/a04/gkumar/code/custom/phrase_speech_translation
+expDir=exp/new-mert.4.decode.dev2
+tunedExpDir=exp/new-mert.4
 
 mt_util/decoder.py \
   -p $expDir/decoder/lat \
   -c $tunedExpDir/SDecoder_cfg.txt.ZMERT.final \
-  -f data/mt/phrase_feats.tune.test \
+  -f data/mt/phrase_feats.tune.dev2 \
   -o $expDir/decoder/ \
   -s $expDir/decoder/pre/syms.txt \
-  -a data/asr/test/1best/asr.1best.clean \
+  -a data/asr/dev2/1best/asr.1best.clean \
   -k $expDir/decoder/pre/known_oov.txt > $expDir/decoder/decoder.out
 
 #asr_util/cleanASROutput.sh $expDir/decoder/nbest.result

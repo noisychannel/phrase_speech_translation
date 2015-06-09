@@ -48,3 +48,11 @@ mv W_mt.fst.txt $arkDir/
 mv decoder.out $arkDir/
 
 cd ..
+
+# STEP 3: Extract the 1-best output and clean the output
+util/n21best.py -n exp/new-mert.4.decode.dev2/nbest.out \
+  -w exp/new-mert.4/SDecoder_cfg.txt.ZMERT.final \
+  | asr_util/cleanASROutput.sh > exp/new-mert.4.decode.dev2/1best.out
+util/n21best.py -n exp/new-mert.4.decode.test/nbest.out \
+  -w exp/new-mert.4/SDecoder_cfg.txt.ZMERT.final \
+  | asr_util/cleanASROutput.sh > exp/new-mert.4.decode.test/1best.out

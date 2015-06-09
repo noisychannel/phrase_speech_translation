@@ -67,6 +67,17 @@ def getVocabID(word):
   """
   return str(vocabulary[word])
 
+
+def nbestScoreFormat(scoreVector):
+    assert len(scoreVector) == 6
+    output = "p_feat_1=" + str(scoreVector[0]) + " "
+    output += "p_feat_2=" + str(scoreVector[1]) + " "
+    output += "p_feat_3=" + str(scoreVector[2]) + " "
+    output += "p_feat_4=" + str(scoreVector[3]) + " "
+    output += "oov_feat=" + str(scoreVector[4]) + " "
+    output += "asr_feat=" + str(scoreVector[5])
+    return output
+
 weights = []
 # Read weights : one per line
 for line in weightsFile:
@@ -141,13 +152,15 @@ for lineNo, line in enumerate(asrBest):
 
   if os.path.exists(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest"):
     if os.stat(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest").st_size == 0:
-      output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+      #output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+      output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + nbestScoreFormat(["100.0" for _ in range(len(weights))]) + "\n")
       continue
 
     f = codecs.open(opts.outputDir + "/nbest/" + str(actualLineNo) + ".lat.nbest", encoding="utf8")
     for hyp in f:
       if hyp.strip() == "|||":
-        output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+        #output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+        output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + nbestScoreFormat(["100.0" for _ in range(len(weights))]) + "\n")
         continue
 
       hypComp = hyp.strip().split("|||")
@@ -168,10 +181,12 @@ for lineNo, line in enumerate(asrBest):
       else:
         inputTrans = nBestTrans[actualLineNo][inputHyp] if inputHyp in nBestTrans[actualLineNo] else "NO_TRANSLATION"
 
-      output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + " ".join([str(x) for x in scores]) + "\n")
+      #output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + " ".join([str(x) for x in scores]) + "\n")
+      output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + nbestScoreFormat([str(x) for x in scores]) + "\n")
 
   else:
-    output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+    #output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")
+    output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + nbestScoreFormat(["100.0" for _ in range(len(weights))]) + "\n")
 
 output.close()
 asrBest.close()

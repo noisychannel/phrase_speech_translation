@@ -8,7 +8,7 @@ if [ $# -lt 5 ]; then
   exit 1
 fi
 
-noNBest=500
+noNBest=5000
 maxProcesses=2
 
 KALDI_ROOT=$1
@@ -51,11 +51,7 @@ then
     # TODO: Change this : Asynchronous writing to the same file is causing problems
     #Convert the int to word for each sentence
     cat $bname.words | $KALDI_ROOT/egs/fisher_callhome_spanish/s5/utils/int2sym.pl -f 2- \
-      $symTable >> $allNBest
-
-    # Also concatenate all acoustic and LM scores
-    cat $bname.lmscore >> $allNBest.lmscore
-    cat $bname.acscore >> $allNBest.acscore
+      $symTable > $bname.syms
 
     echo "Done getting n-best"
     ) &	
@@ -70,11 +66,23 @@ then
   done
   wait
 
+  for l in $decode_dir/lat.*.gz
+  do	
+    # Extract file name and unzip the file first
+    bname=${l##*/}
+    bname="$latdir/${bname%.gz}"
+
+    cat $bname.syms >> $allNBest
+
+    # Also concatenate all acoustic and LM scores
+    cat $bname.lmscore >> $allNBest.lmscore
+    cat $bname.acscore >> $allNBest.acscore
+
+  done
+  wait
+
   # Sanity check : acscore and lmscore should match line by line wrt UttID
   paste $allNBest.acscore $allNBest.lmscore | awk '{if ($1 != $3) {print "Error " $_}}'
 
-  #echo "NOTE : Do not proceed if you had errors in the previous step."
-  #paste $allNBest.acscore $allNBest.lmscore | \
-    #awk -v ac_scale=$acoustic_scale '{print $1 " " $2*acoustic_scale + $4}' \
-    #> $allNBest.score
+  echo "NOTE : Do not proceed if you had errors in the previous step."
 fi

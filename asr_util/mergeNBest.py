@@ -6,7 +6,6 @@
 # The list of files in the conversations for which n best output has to be extracted
 
 import os
-import sys
 import argparse
 
 parser = argparse.ArgumentParser("Merges Kaldi nbest output based on time information provided with the Spanish Fisher corpus")
@@ -32,12 +31,15 @@ nBest = {}
 for line in nBestFile:
   line = line.split()
   # 20051023_232057_325_fsp-A-000015-000211-65
-  timeInfo = "-".join(line[0].split("-")[:-1])
+  # timeInfo does not contain nbest nos anymore
+  #timeInfo = "-".join(line[0].split("-")[:-1])
+  timeInfo = line[0].strip()
   trans = " ".join(line[1:]).strip()
   if timeInfo not in nBest:
     nBest[timeInfo] = []
   nBest[timeInfo].append(trans)
 
+print len(nBest)
 
 def findTranscription(timeDetail):
   # 20051021_222225_307_fsp-B-021848-022135
@@ -69,9 +71,9 @@ for item in fileList:
           tmpResults = []
           for i, m_l in enumerate(mergedTranslation):
             for j, t_l in enumerate(tmp):
-              tmpResults.append((i+1)*(j+1), m_l + " " + t_l)
+              tmpResults.append(((i+1)*(j+1), m_l + " " + t_l))
           # Prune to get only the top 500 hyps
-          mergedTranslation = [y[1] for y in sorted(tmpResults, key=lambda x:x[0])][:500]
+          mergedTranslation = [y[1] for y in sorted(tmpResults, key=lambda x:x[0])][:5000]
 
     # Add an empty entry if no hyps were found
     if len(mergedTranslation) == 0:

@@ -21,7 +21,7 @@ echo $asrScale
 bname=${p##*/}
 fstprint $p | awk -v s=$asrScale '{if (NF == 5) {$5 = $5*s}; print $_}' | fstcompile --arc_type=log \
   | fstcompose - $w | fstprint \
-  | fstcompile | fstshortestpath --nshortest=99 | fstrmepsilon \
+  | fstcompile | fstshortestpath --nshortest=299 | fstrmepsilon \
   | fstminimize | fstconcat - $outputDir/dummy.fst > $outputDir/latFinal/$bname
 
 fstprintpaths $syms $outputDir/latFinal/$bname 2 >> $outputDir/nbest/$bname.nbest

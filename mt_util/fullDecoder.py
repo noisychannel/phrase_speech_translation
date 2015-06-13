@@ -28,6 +28,8 @@ if opts.phraseLatDir is None or opts.config is None:
   parser.print_help()
   sys.exit(1)
 
+REMOVE_LIST = ["[noise]", "[laughter]", "[oov]", "[unk]"]
+
 # 1. Read the feats file, create W_mt, take inspiration from phrase2FST
 # 2. Keep, the phrase features in memory
 
@@ -143,6 +145,9 @@ output = codecs.open(opts.outputDir + "/nbest.result", "w+", encoding="utf8")
 for lineNo, line in enumerate(asrBest):
   actualLineNo = lineNo + 1
   line = line.strip()
+  # Remove special symbols. TODO:Further investigate, this may cause wrong results to be produced
+  # with segments that are just noise
+  line = " ".join([i for i in line.split() if i not in REMOVE_LIST])
 
   if line == "":
     line = "NO_TRANSLATION"

@@ -1,5 +1,24 @@
 # Outline for running an experiment
-
+mkdir new-mert.5
+# Run tune.sh to create the pre-requisites
+nohup mt_util/tune.sh data/asr/dev/mergedLat/finalLat/ exp/new-mert.5 \
+  data/mt/phrase_feats.tune.dev \
+  /export/a04/gkumar/code/kaldi-new/egs/fisher_callhome_spanish/s5/exp/tri5a/graph/words.txt \
+  log2 > log2/6.dev.log &
+# Check consistency of created lattices
+for i in *.lat; do fstprint $i | wc -l | awk -v j=$i '{if ($1 < 2) {print j}}'; done
+# Copy template
+cp new-mert.4/SDecoder_c* new-mert.5/
+cp new-mert.4/params.txt new-mert.5/
+cp new-mert.4/ref.* new-mert.5/
+cp new-mert.4/ZMERT_cfg.txt new-mert.5/
+cp new-mert.4/zmert.jar new-mert.5/
+cp new-mert.4/Makefile new-mert.5/
+cd new-mert.5
+make clean
+# Modify SDecoder_cmd and ZMERT_cft.txt
+# Run the tuner
+nohup ./joshua.zmert.sh > jmert.out &
 
 # After running experiments decode using 
 # Decode the dev2 and the test sets

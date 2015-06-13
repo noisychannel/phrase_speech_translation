@@ -145,9 +145,6 @@ output = codecs.open(opts.outputDir + "/nbest.result", "w+", encoding="utf8")
 for lineNo, line in enumerate(asrBest):
   actualLineNo = lineNo + 1
   line = line.strip()
-  # Remove special symbols. TODO:Further investigate, this may cause wrong results to be produced
-  # with segments that are just noise
-  line = " ".join([i for i in line.split() if i not in REMOVE_LIST])
 
   if line == "":
     line = "NO_TRANSLATION"
@@ -184,6 +181,9 @@ for lineNo, line in enumerate(asrBest):
         inputTrans = lineTrans
         scores = ["100.0" for _ in range(len(weights))]
       else:
+        # Remove special symbols. TODO:Further investigate, this may cause wrong results to be produced
+        # with segments that are just noise
+        inputHyp = " ".join([i for i in inputHyp.split() if i not in REMOVE_LIST])
         inputTrans = nBestTrans[actualLineNo][inputHyp] if inputHyp in nBestTrans[actualLineNo] else "NO_TRANSLATION"
 
       #output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + " ".join([str(x) for x in scores]) + "\n")

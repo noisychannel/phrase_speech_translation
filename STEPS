@@ -147,7 +147,7 @@ asr_util/removeLatWeights.sh data/asr/test/mergedLat/finalLat data/asr/test/merg
 ###############
 
 # Decode n-best list
-nohup mt_util/mosesFilterDecode.sh /export/a04/gkumar/experiments/is2015/8 \
+nohup mt_util/mosesfilterdecode.sh /export/a04/gkumar/experiments/is2015/8 \
   /export/a04/gkumar/code/custom/phrase_speech_translation/data/asr/dev/nbest/asr.nbest.clean \
   /export/a04/gkumar/experiments/is2015/5/tuning/moses.tuned.ini.1 \
   /export/a04/gkumar/experiments/is2015/5/model > log/decode.nbest.dev.out &

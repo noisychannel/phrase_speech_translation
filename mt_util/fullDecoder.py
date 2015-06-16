@@ -187,7 +187,10 @@ for lineNo, line in enumerate(asrBest):
         inputTrans = nBestTrans[actualLineNo][inputHyp] if inputHyp in nBestTrans[actualLineNo] else "NO_TRANSLATION"
 
       #output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + " ".join([str(x) for x in scores]) + "\n")
-      output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + nbestScoreFormat([str(x) for x in scores]) + "\n")
+      if inputTrans == "NO_TRANSLATION":
+          output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + nbestScoreFormat(["100.0" for _ in range(len(weights))]) + "\n")
+      else:
+          output.write(str(lineNo) + " ||| " + inputTrans + " ||| " + nbestScoreFormat([str(x) for x in scores]) + "\n")
 
   else:
     #output.write(str(lineNo) + " ||| " + lineTrans + " ||| " + " ".join(["100.0" for _ in range(len(weights))]) + "\n")

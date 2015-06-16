@@ -8,3 +8,4 @@ test
 *.exp.sh
 *.o
 *.os
+mt_util/superDecoder.py

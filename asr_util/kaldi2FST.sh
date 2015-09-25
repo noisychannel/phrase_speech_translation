@@ -24,7 +24,7 @@ acoustic_scale=$4
 
 if [ ! -d $KALDI_ROOT ]
 then
-  echo "Invalid Kaldi Root specified"
+  echo "Invalid Kaldi Root ($KALDI_ROOT) specified"
   exit 1;
 fi
 
@@ -79,7 +79,8 @@ then
         fi
         # Replace laugh, unk, oov, noise with eps
         #echo "$line" | awk '{if ($3 == 2035 || $3 == 2038 || $3 == 2039 || $3 == 2040) {$3 = 0; $4 = 0} print}' >> "$latdir/$rawLatDir/$fileName.lat"
-        echo "$line" >> "$latdir/$rawLatDir/$fileName.lat"
+        echo "$line" | awk -F'\t' -v OFS='\t' '{if (NF > 2 && $3 <= 5) {$3 = 0; $4 = 0} print}' >> "$latdir/$rawLatDir/$fileName.lat"
+        #echo "$line" >> "$latdir/$rawLatDir/$fileName.lat"
       done < $bname.ark.fst
       echo "Done isolating lattices"
     fi

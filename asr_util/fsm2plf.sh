@@ -6,7 +6,7 @@ set -u
 
 if [ $# -lt 2 ]
 then
-    echo "Location of wordlist required"
+    echo "Usage: fsm2plf.sh <wordlist> <FSM file>"
     exit 1
 fi
 
@@ -17,4 +17,4 @@ if [[ ! -e $wordlist ]]; then
   exit 1
 fi
 
-fstprint --isymbols=$wordlist --osymbols=$wordlist $2 | asr_util/txt2plf.pl	
+fstprint --isymbols=$wordlist --osymbols=$wordlist $2 | $(dirname $0)/txt2plf.pl	

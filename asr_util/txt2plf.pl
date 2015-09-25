@@ -32,7 +32,7 @@ while (<>) {
 
   if (defined $j) {
     if ($j < $i) {
-      print "* FATAL: $j < $i\n";
+      print "* [$.] FATAL: $j < $i\n";
       #exit;
     }
     push @{$arcs[$i][$j-$i]}, [$label,$score];

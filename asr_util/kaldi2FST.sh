@@ -11,7 +11,7 @@ if [ $# -lt 4 ]; then
   exit 1
 fi
 
-prunebeam=4
+prunebeam=2
 maxProcesses=5
 
 KALDI_ROOT=$1
@@ -99,7 +99,10 @@ then
       (
       # Arc type needs to be log
       bname=${l##*/}
-      fstcompile --arc_type=log $latdir/$rawLatDir/$bname $latdir/$compiledLatDir/$bname
+      # Pruning above doesn't work, and you can't prune when in log mode, so we have this
+      cat $latdir/$rawLatDir/$bname \
+        | fstcompile | fstprune --weight=$prunebeam | fstprint \
+        | fstcompile --arc_type=log - $latdir/$compiledLatDir/$bname
       ) &
       runningProcesses=$((runningProcesses+1))
       echo "#### Processes running = " $runningProcesses " ####"

@@ -151,6 +151,35 @@ then
     rm $latdir/$preplfLatDir/dummy.fst
     echo "Done performing fst push (initial state)"
   fi
+
+  # Produce the PLFs
+  if [ $stage -le 4 ]; then
+    mkdir -p $latdir/plf
+    for l in $latdir/$preplfLatDir/*.lat
+    do
+      (
+      bname=${l##*/}
+      plfname=$(basename $bname .lat).plf
+      cat $latdir/$preplfLatDir/$bname \
+		| fsttopsort \
+		| fstprint --isymbols=words.txt --osymbols=words.txt \
+        | $(dirname $0)/txt2plf.pl \
+	> $latdir/plf/$plfname
+      ) &
+      runningProcesses=$((runningProcesses+1))
+      echo "#### Processes running = " $runningProcesses " ####"
+      if [ $runningProcesses -eq $maxProcesses ]; then
+        echo "#### Waiting for slot ####"
+        wait
+        runningProcesses=0
+        echo "#### Done waiting ####"
+      fi
+    done
+    wait
+    echo "Done building PLFs"
+    cat $latdir/plf/*.plf > $latdir/$latdir.plf
+    echo "Done consolidating PLFs"
+  fi
 else
   echo "Complete training and decoding first"
 fi

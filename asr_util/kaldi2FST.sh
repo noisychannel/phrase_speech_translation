@@ -118,23 +118,33 @@ then
   fi
 
   if [ $stage -le 3 ]; then
-    #Sanjeev's Recipe for creating valid PLF compatible FSTs"
     # Create a dummy FST with one state and no arcs first
-    echo 0 | fstcompile --arc_type=log - $latdir/$preplfLatDir/dummy.fst
-    # Push Lattice weights towards initial state
+	  cat > sos.txt <<EOF
+1 2 <s> <s>
+2
+EOF
+	  cat > eos.txt <<EOF
+1 2 </s> </s>
+2 
+EOF
+	for prefix in sos eos; do
+      cat $prefix.txt | fstcompile --isymbols=words.txt --osymbols=words.txt --arc_type=log > $prefix.fst
+	done
+
     runningProcesses=0
     for l in $latdir/$compiledLatDir/*.lat
     do
       (
       bname=${l##*/}
-      fstrmepsilon $latdir/$compiledLatDir/$bname | \
-        fstpush --push_weights --remove_total_weight - | \
-        # Do not topo sort here, do it before converting into PLF
-      # Sanjeev's Recipe : Concatenate with dummy FST
-      fstconcat - $latdir/$preplfLatDir/dummy.fst | \
-        fstreverse - | \
-        fstrmepsilon - | \
-        fstreverse - $latdir/$preplfLatDir/$bname
+
+      cat $latdir/$compiledLatDir/$bname \
+		  | fstrmepsilon \
+		  | fstdeterminize | fstminimize \
+		  | fstpush --push_weights --remove_total_weight \
+		  | fstconcat sos.fst - \
+		  | fstconcat - eos.fst \
+		  | fstrmepsilon \
+		  > $latdir/$preplfLatDir/$bname
       ) &
       runningProcesses=$((runningProcesses+1))
       echo "#### Processes running = " $runningProcesses " ####"

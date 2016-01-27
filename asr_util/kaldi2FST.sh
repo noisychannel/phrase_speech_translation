@@ -5,9 +5,9 @@
 
 # Derived from the Kaldi recipe for Fisher Spanish (KALDI_TRUNK/egs/fisher_callhome_spanish/s5/local)
 
-if [ $# -lt 4 ]; then
-  echo "Usage : asr_util/kaldi2FST.sh [KALDI_ROOT] [LatticeDir] [DecodeDir] [AcousticScale]"
-  echo "Enter the latdir (where the lattices will be put), the decode dir containing lattices and the acoustic scale"
+if [ $# -lt 5 ]; then
+  echo "Usage : asr_util/kaldi2FST.sh [KALDI_ROOT] [LatticeDir] [DecodeDir] [AcousticScale] [SYMTABLE]"
+  echo "Enter the latdir (where the lattices will be put), the decode dir containing lattices, the acoustic scale and the symbol table"
   exit 1
 fi
 
@@ -18,6 +18,7 @@ KALDI_ROOT=$1
 latdir=$2
 decode_dir=$3
 acoustic_scale=$4
+symtable=$5
 #latdir="latjosh-2-callhome"
 #decode_dir=exp/tri5a/decode_$partition
 #acoustic_scale=0.077
@@ -80,8 +81,10 @@ then
         fi
         # Replace laugh, unk, oov, noise with eps
         #echo "$line" | awk '{if ($3 == 2035 || $3 == 2038 || $3 == 2039 || $3 == 2040) {$3 = 0; $4 = 0} print}' >> "$latdir/$rawLatDir/$fileName.lat"
-        echo "$line" | awk -F'\t' -v OFS='\t' '{if (NF > 2 && $3 <= 5) {$3 = 0; $4 = 0} print}' >> "$latdir/$rawLatDir/$fileName.lat"
-        #echo "$line" >> "$latdir/$rawLatDir/$fileName.lat"
+        #echo "$line" | awk -F'\t' -v OFS='\t' '{if (NF > 2 && $3 <= 5) {$3 = 0; $4 = 0} print}' >> "$latdir/$rawLatDir/$fileName.lat"
+        #(gkumar) : This script is no longer responsible for removing special words.
+        #           This should be handled via some form of postprocessing.
+        echo "$line" >> "$latdir/$rawLatDir/$fileName.lat"
       done < $bname.ark.fst
       echo "Done isolating lattices"
     fi
@@ -137,7 +140,7 @@ EOF
 2 
 EOF
 	for prefix in sos eos; do
-      cat $prefix.txt | fstcompile --isymbols=words.txt --osymbols=words.txt --arc_type=log > $prefix.fst
+      cat $prefix.txt | fstcompile --isymbols=$symtable --osymbols=$symtable --arc_type=log > $prefix.fst
 	done
 
     runningProcesses=0
@@ -181,7 +184,7 @@ EOF
       plfname=$(basename $bname .lat).plf
       cat $latdir/$preplfLatDir/$bname \
 		| fsttopsort \
-		| fstprint --isymbols=words.txt --osymbols=words.txt \
+		| fstprint --isymbols=$symtable --osymbols=$symtable \
         | $(dirname $0)/txt2plf.pl \
 	> $latdir/plf/$plfname
       ) &

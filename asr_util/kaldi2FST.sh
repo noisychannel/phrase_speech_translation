@@ -42,6 +42,7 @@ then
   mkdir -p $latdir/$compiledLatDir
   mkdir -p $latdir/$preplfLatDir
 
+  runningProcesses=0
   for l in $decode_dir/lat.*.gz
   do	
     (
@@ -85,6 +86,14 @@ then
       echo "Done isolating lattices"
     fi
     ) &	
+    runningProcesses=$((runningProcesses+1))
+    echo "#### Processes running = " $runningProcesses " ####"
+    if [ $runningProcesses -eq $maxProcesses ]; then
+      echo "#### Waiting for slot ####"
+      wait
+      runningProcesses=0
+      echo "#### Done waiting ####"
+    fi
   done
   wait
   rm $latdir/*.bin

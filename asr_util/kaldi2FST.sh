@@ -183,10 +183,10 @@ EOF
       bname=${l##*/}
       plfname=$(basename $bname .lat).plf
       cat $latdir/$preplfLatDir/$bname \
-		| fsttopsort \
-		| fstprint --isymbols=$symtable --osymbols=$symtable \
+        | fsttopsort \
+        | fstprint --isymbols=$symtable --osymbols=$symtable \
         | $(dirname $0)/txt2plf.pl \
-	> $latdir/plf/$plfname
+        > $latdir/plf/$plfname
       ) &
       runningProcesses=$((runningProcesses+1))
       echo "#### Processes running = " $runningProcesses " ####"
@@ -199,7 +199,7 @@ EOF
     done
     wait
     echo "Done building PLFs"
-    cat $latdir/plf/*.plf > $latdir/$latdir.plf
+    cat $latdir/plf/*.plf > $latdir/${latdir}.plf
     echo "Done consolidating PLFs"
   fi
 else

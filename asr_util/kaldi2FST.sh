@@ -29,7 +29,7 @@ then
   exit 1;
 fi
 
-stage=1
+stage=4
 
 if [ -d $decode_dir ]
 then
@@ -199,7 +199,8 @@ EOF
     done
     wait
     echo "Done building PLFs"
-    cat $latdir/plf/*.plf > $latdir/${latdir}.plf
+    outFileName=`basename $latdir`
+    for i in $latdir/plf/*.plf; do con=`cat $i`; echo -e "`basename ${i}`\t${con}"; done > $latdir/${outFileName}.plf
     echo "Done consolidating PLFs"
   fi
 else

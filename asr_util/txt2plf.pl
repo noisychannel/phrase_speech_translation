@@ -26,7 +26,7 @@ while (<>) {
     next;
   }
 
-  $label = lc $label;
+  #$label = lc $label;
   $label =~ s/^\*//;
   $score = 0.0 unless defined $score;
 

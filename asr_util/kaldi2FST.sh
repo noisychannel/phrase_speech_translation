@@ -29,7 +29,7 @@ then
   exit 1;
 fi
 
-stage=4
+stage=1
 
 if [ -d $decode_dir ]
 then
